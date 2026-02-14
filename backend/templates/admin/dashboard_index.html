@@ -1,0 +1,182 @@
+{% extends "admin/index.html" %}
+{% load i18n %}
+
+{% block content %}
+{% if analytics %}
+<div class="dashboard-analytics" id="dashboard-analytics">
+  <div class="admin-panel mobile-quick-actions" style="margin-bottom: 1rem;">
+    <h3 class="admin-panel-title">{% trans "Quick access" %}</h3>
+    <div class="order-action-group">
+      <a class="order-action-btn order-action-btn-open" href="{% url 'admin:orders_order_changelist' %}">
+        {% trans "Open orders" %}
+      </a>
+      <a class="order-action-btn order-action-btn-open" href="{% url 'admin:orders_order_statement' %}">
+        {% trans "Orders statement" %}
+      </a>
+      <a class="order-action-btn order-action-btn-view" href="{% url 'admin:vendor_profile' %}">
+        {% trans "Vendor profile" %}
+      </a>
+    </div>
+  </div>
+  <h2 class="admin-panel-title">{% trans "Analytics Overview" %}</h2>
+  <div class="admin-dashboard-grid analytics-overview-grid">
+    <div class="admin-stat-card">
+      <p class="admin-stat-label">{% trans "Active users" %}</p>
+      <p class="admin-stat-value">{{ analytics.users_count }}</p>
+    </div>
+    <div class="admin-stat-card">
+      <p class="admin-stat-label">{% trans "Products" %}</p>
+      <p class="admin-stat-value">{{ analytics.products_count }}</p>
+    </div>
+    <div class="admin-stat-card">
+      <p class="admin-stat-label">{% trans "Orders" %}</p>
+      <p class="admin-stat-value">{{ analytics.orders_count }}</p>
+    </div>
+    <div class="admin-stat-card">
+      <p class="admin-stat-label">{% trans "Sales today" %}</p>
+      <p class="admin-stat-value">{{ analytics.sales_daily|floatformat:2 }} ILS</p>
+    </div>
+    <div class="admin-stat-card">
+      <p class="admin-stat-label">{% trans "Sales (7 days)" %}</p>
+      <p class="admin-stat-value">{{ analytics.sales_weekly|floatformat:2 }} ILS</p>
+    </div>
+    <div class="admin-stat-card">
+      <p class="admin-stat-label">{% trans "Sales (this month)" %}</p>
+      <p class="admin-stat-value">{{ analytics.sales_monthly|floatformat:2 }} ILS</p>
+    </div>
+    <div class="admin-stat-card">
+      <p class="admin-stat-label">{% trans "Total sales" %}</p>
+      <p class="admin-stat-value">{{ analytics.total_sales_all|floatformat:2 }} ILS</p>
+    </div>
+    <div class="admin-stat-card">
+      <p class="admin-stat-label">{% trans "Active orders" %}</p>
+      <p class="admin-stat-value">{{ analytics.active_orders_count }}</p>
+    </div>
+    <div class="admin-stat-card">
+      <p class="admin-stat-label">{% trans "Coupons used" %}</p>
+      <p class="admin-stat-value">{{ analytics.coupons_uses_total }}</p>
+      <p class="text-sm text-adminBrand-600">{% trans "Orders with coupon:" %} {{ analytics.orders_with_coupon }}</p>
+    </div>
+  </div>
+  {% if analytics.best_sellers %}
+  <div class="admin-panel">
+    <h3 class="admin-panel-title">{% trans "Best-selling products" %}</h3>
+    <ul class="list-disc pl-5 text-adminBrand-700">
+      {% for item in analytics.best_sellers %}
+      <li class="py-1">{{ item.product__name_en|default:"—" }}: {{ item.total_qty }} sold</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+  {% if analytics.recent_orders %}
+  <div class="admin-panel orders-focus-panel" style="margin-top: 1rem;">
+    <div class="orders-focus-header">
+      <h3 class="admin-panel-title orders-focus-title">{% trans "Order Management Section" %}</h3>
+      <a class="order-action-btn order-action-btn-open" href="{% url 'admin:orders_order_changelist' %}">
+        {% trans "Open all orders" %}
+      </a>
+    </div>
+    <p class="orders-focus-subtitle">{% trans "Accept or delete orders quickly from this section." %}</p>
+    <div class="results orders-results-table">
+      <table id="result_list">
+        <thead>
+          <tr>
+            <th>{% trans "Order" %}</th>
+            <th>{% trans "Customer" %}</th>
+            <th>{% trans "Phone" %}</th>
+            <th>{% trans "Status" %}</th>
+            <th>{% trans "Product names" %}</th>
+            <th>{% trans "Quantities" %}</th>
+            <th>{% trans "Total" %}</th>
+            <th>{% trans "Created" %}</th>
+            <th>{% trans "Actions" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in analytics.recent_orders %}
+          <tr>
+            <td>
+              <a href="{% url 'admin:orders_order_change' order.id %}">{{ order.public_id }}</a>
+            </td>
+            <td>{{ order.customer_name }}</td>
+            <td>{{ order.customer_phone }}</td>
+            <td><span class="status-badge status-badge-{{ order.status }}">{{ order.get_status_display }}</span></td>
+            <td>
+              <div class="order-lines">
+                {% for item in order.items.all %}
+                  <div class="order-line">
+                    {{ item.product_snapshot.name_en|default:item.product.name_en|default:"-" }}
+                  </div>
+                {% empty %}
+                  <div class="order-line">-</div>
+                {% endfor %}
+              </div>
+            </td>
+            <td>
+              <div class="order-lines order-lines-qty">
+                {% for item in order.items.all %}
+                  <div class="order-line">{{ item.quantity }}</div>
+                {% empty %}
+                  <div class="order-line">-</div>
+                {% endfor %}
+              </div>
+            </td>
+            <td>{{ order.total }} {{ order.currency }}</td>
+            <td>{{ order.created_at }}</td>
+            <td>
+              <div class="order-action-group">
+                <a class="order-action-btn order-action-btn-accept" href="{% url 'admin:orders_order_accept' order.id %}">
+                  {% trans "Accept" %}
+                </a>
+                <a class="order-action-btn order-action-btn-view" href="{% url 'admin:orders_order_window' order.id %}">
+                  {% trans "View" %}
+                </a>
+                <a class="order-action-btn order-action-btn-open" href="{% url 'admin:orders_order_invoice' order.id %}">
+                  {% trans "Invoice" %}
+                </a>
+                <a class="order-action-btn order-action-btn-delete" href="{% url 'admin:orders_order_delete' order.id %}">
+                  {% trans "Delete" %}
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="orders-mobile-cards">
+      {% for order in analytics.recent_orders %}
+      <article class="order-mobile-card">
+        <div class="order-mobile-top">
+          <a class="order-mobile-id" href="{% url 'admin:orders_order_change' order.id %}">{{ order.public_id }}</a>
+          <span class="status-badge status-badge-{{ order.status }}">{{ order.get_status_display }}</span>
+        </div>
+        <div class="order-mobile-row"><span>{% trans "Customer" %}</span><strong>{{ order.customer_name }}</strong></div>
+        <div class="order-mobile-row"><span>{% trans "Phone" %}</span><strong>{{ order.customer_phone }}</strong></div>
+        <div class="order-mobile-row"><span>{% trans "Total" %}</span><strong>{{ order.total }} {{ order.currency }}</strong></div>
+        <div class="order-mobile-row"><span>{% trans "Date" %}</span><strong>{{ order.created_at }}</strong></div>
+        <div class="order-mobile-products">
+          {% for item in order.items.all %}
+          <div class="order-mobile-product">
+            <span>{{ item.product_snapshot.name_en|default:item.product.name_en|default:"-" }}</span>
+            <strong>x{{ item.quantity }}</strong>
+          </div>
+          {% empty %}
+          <div class="order-mobile-product"><span>-</span><strong>-</strong></div>
+          {% endfor %}
+        </div>
+        <div class="order-action-group">
+          <a class="order-action-btn order-action-btn-accept" href="{% url 'admin:orders_order_accept' order.id %}">{% trans "Accept" %}</a>
+          <a class="order-action-btn order-action-btn-view" href="{% url 'admin:orders_order_window' order.id %}">{% trans "View" %}</a>
+          <a class="order-action-btn order-action-btn-open" href="{% url 'admin:orders_order_invoice' order.id %}">{% trans "Invoice" %}</a>
+          <a class="order-action-btn order-action-btn-delete" href="{% url 'admin:orders_order_delete' order.id %}">{% trans "Delete" %}</a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{{ block.super }}
+{% endblock %}

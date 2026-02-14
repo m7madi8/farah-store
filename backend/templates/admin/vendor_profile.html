@@ -1,0 +1,97 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="admin-panel vendor-profile-shell">
+  <div class="vendor-profile-header">
+    <h1 class="orders-focus-title">{% trans "Vendor profile" %}</h1>
+    <a class="order-action-btn order-action-btn-open" href="{% url 'admin:orders_order_changelist' %}">
+      {% trans "View orders" %}
+    </a>
+  </div>
+
+  <div class="admin-dashboard-grid">
+    <div class="admin-stat-card">
+      <p class="admin-stat-label">{% trans "Full name" %}</p>
+      <p class="admin-stat-value" style="font-size: 1.4rem;">{{ profile_user.full_name|default:"-" }}</p>
+    </div>
+    <div class="admin-stat-card">
+      <p class="admin-stat-label">{% trans "Email" %}</p>
+      <p class="admin-stat-value" style="font-size: 1.1rem;">{{ profile_user.email }}</p>
+    </div>
+    <div class="admin-stat-card">
+      <p class="admin-stat-label">{% trans "Phone" %}</p>
+      <p class="admin-stat-value" style="font-size: 1.1rem;">{{ profile_user.phone|default:"-" }}</p>
+    </div>
+    <div class="admin-stat-card">
+      <p class="admin-stat-label">{% trans "Role" %}</p>
+      <p class="admin-stat-value" style="font-size: 1.1rem;">{{ profile_user.get_role_display|default:profile_user.role }}</p>
+    </div>
+  </div>
+
+  <div class="admin-dashboard-grid">
+    <div class="admin-stat-card">
+      <p class="admin-stat-label">{% trans "Total orders" %}</p>
+      <p class="admin-stat-value">{{ profile_stats.orders_total }}</p>
+    </div>
+    <div class="admin-stat-card">
+      <p class="admin-stat-label">{% trans "Pending orders" %}</p>
+      <p class="admin-stat-value">{{ profile_stats.orders_pending }}</p>
+    </div>
+    <div class="admin-stat-card">
+      <p class="admin-stat-label">{% trans "Completed orders" %}</p>
+      <p class="admin-stat-value">{{ profile_stats.orders_completed }}</p>
+    </div>
+    <div class="admin-stat-card">
+      <p class="admin-stat-label">{% trans "Active products" %}</p>
+      <p class="admin-stat-value">{{ profile_stats.products_active }}</p>
+    </div>
+  </div>
+
+  <div class="admin-panel" style="margin-top: 1rem;">
+    <h2 class="admin-panel-title">{% trans "Vendor details" %}</h2>
+    <div class="vendor-details-grid">
+      <div><strong>{% trans "Preferred language" %}:</strong> {{ profile_user.get_preferred_lang_display|default:profile_user.preferred_lang }}</div>
+      <div><strong>{% trans "Joined" %}:</strong> {{ profile_user.created_at }}</div>
+      <div><strong>{% trans "Last login" %}:</strong> {{ profile_user.last_login_at|default:"-" }}</div>
+      <div><strong>{% trans "Last update" %}:</strong> {{ profile_user.updated_at }}</div>
+      <div><strong>{% trans "Email verified at" %}:</strong> {{ profile_user.email_verified_at|default:"-" }}</div>
+      <div><strong>{% trans "Account active" %}:</strong> {% if profile_user.is_active %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</div>
+      <div><strong>{% trans "Staff access" %}:</strong> {% if profile_user.is_staff %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</div>
+      <div><strong>{% trans "Addresses count" %}:</strong> {{ profile_stats.addresses_total }}</div>
+    </div>
+  </div>
+
+  <div class="admin-panel" style="margin-top: 1rem;">
+    <h2 class="admin-panel-title">{% trans "Addresses" %}</h2>
+    <div class="results">
+      <table id="result_list">
+        <thead>
+          <tr>
+            <th>{% trans "Label" %}</th>
+            <th>{% trans "Full name" %}</th>
+            <th>{% trans "Phone" %}</th>
+            <th>{% trans "City" %}</th>
+            <th>{% trans "Address line" %}</th>
+            <th>{% trans "Default" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for address in addresses %}
+          <tr>
+            <td>{{ address.label|default:"-" }}</td>
+            <td>{{ address.full_name }}</td>
+            <td>{{ address.phone }}</td>
+            <td>{{ address.city }}</td>
+            <td>{{ address.line1 }}</td>
+            <td>{% if address.is_default %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6">{% trans "No addresses found." %}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

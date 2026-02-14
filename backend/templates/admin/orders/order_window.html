@@ -1,0 +1,85 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="admin-panel orders-focus-panel">
+  <div class="orders-focus-header">
+    <h1 class="orders-focus-title">Order {{ order.public_id }}</h1>
+    <div class="order-action-group">
+      <a class="order-action-btn order-action-btn-open" href="{% url 'admin:orders_order_changelist' %}">{% trans "Back to orders" %}</a>
+      <a class="order-action-btn order-action-btn-view" href="{% url 'admin:orders_order_invoice' order.id %}">{% trans "Print invoice" %}</a>
+      <a class="order-action-btn order-action-btn-open" href="{% url 'admin:orders_order_statement' %}">{% trans "Orders statement" %}</a>
+      <a class="order-action-btn order-action-btn-accept" href="{% url 'admin:orders_order_accept' order.id %}">{% trans "Accept" %}</a>
+      <a class="order-action-btn order-action-btn-delete" href="{% url 'admin:orders_order_delete' order.id %}">{% trans "Delete" %}</a>
+    </div>
+  </div>
+
+  <div class="admin-dashboard-grid" style="margin-top: 0.5rem;">
+    <div class="admin-stat-card">
+      <p class="admin-stat-label">{% trans "Customer" %}</p>
+      <p class="admin-stat-value" style="font-size: 1.5rem;">{{ order.customer_name }}</p>
+      <p class="orders-focus-subtitle">{{ order.customer_phone }}</p>
+    </div>
+    <div class="admin-stat-card">
+      <p class="admin-stat-label">{% trans "Status" %}</p>
+      <p class="admin-stat-value" style="font-size: 1.5rem;"><span class="status-badge status-badge-{{ order.status }}">{{ order.get_status_display }}</span></p>
+      <p class="orders-focus-subtitle">{{ order.created_at }}</p>
+    </div>
+    <div class="admin-stat-card">
+      <p class="admin-stat-label">{% trans "Total" %}</p>
+      <p class="admin-stat-value" style="font-size: 1.5rem;">{{ order.total }} {{ order.currency }}</p>
+      <p class="orders-focus-subtitle">{% trans "Subtotal" %}: {{ order.subtotal }}</p>
+    </div>
+    <div class="admin-stat-card">
+      <p class="admin-stat-label">{% trans "Shipping address" %}</p>
+      <p class="orders-focus-subtitle" style="font-size: 0.95rem; color: var(--admin-text);">{{ order.shipping_address }}</p>
+    </div>
+  </div>
+
+  <div class="admin-panel" style="margin-top: 1rem;">
+    <h2 class="admin-panel-title">{% trans "Requested products" %}</h2>
+    <div class="results orders-results-table">
+      <table id="result_list">
+        <thead>
+          <tr>
+            <th>{% trans "Product name" %}</th>
+            <th>{% trans "Quantity" %}</th>
+            <th>{% trans "Unit price" %}</th>
+            <th>{% trans "Line total" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in order.items.all %}
+          <tr>
+            <td>{{ item.product_snapshot.name_en|default:item.product.name_en|default:"-" }}</td>
+            <td><span class="order-line">{{ item.quantity }}</span></td>
+            <td>{{ item.unit_price_at_purchase }}</td>
+            <td>{{ item.total }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="orders-mobile-cards">
+      {% for item in order.items.all %}
+      <article class="order-mobile-card">
+        <div class="order-mobile-row">
+          <span>{% trans "Product name" %}</span>
+          <strong>{{ item.product_snapshot.name_en|default:item.product.name_en|default:"-" }}</strong>
+        </div>
+        <div class="order-mobile-row"><span>{% trans "Quantity" %}</span><strong>{{ item.quantity }}</strong></div>
+        <div class="order-mobile-row"><span>{% trans "Unit price" %}</span><strong>{{ item.unit_price_at_purchase }}</strong></div>
+        <div class="order-mobile-row"><span>{% trans "Line total" %}</span><strong>{{ item.total }}</strong></div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if order.notes %}
+  <div class="admin-panel" style="margin-top: 1rem;">
+    <h3 class="admin-panel-title">{% trans "Order notes" %}</h3>
+    <p class="orders-focus-subtitle" style="font-size: 0.95rem; color: var(--admin-text);">{{ order.notes }}</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --deep-purple: #4b2a63;
+    --lavender: #7a5c8e;
+    --off-white: #faf9f7;
+    --soft-pink: #f2e3e1;
+    --dark: #2d1a3d;
+    --dark-soft: #3d224f;
+  }
+}
+
+@layer components {
+  .ui-card {
+    @apply rounded-2xl border border-brand-200/50 bg-white/90 shadow-soft backdrop-blur-sm;
+  }
+
+  .ui-card-title {
+    @apply font-display text-2xl font-semibold tracking-tight text-brand-800;
+  }
+
+  .ui-input {
+    @apply w-full rounded-xl border border-brand-200 bg-white px-3 py-2 text-brand-800 transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-300/60;
+  }
+
+  .ui-label {
+    @apply mb-1 block text-sm font-medium text-brand-800;
+  }
+
+  .ui-btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-brand-800 bg-brand-800 px-4 py-2 font-semibold text-white transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-300;
+  }
+
+  .ui-btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-brand-400 bg-white px-4 py-2 font-semibold text-brand-700 transition hover:bg-brand-50 focus:outline-none focus:ring-2 focus:ring-brand-300;
+  }
+
+  .ui-table {
+    @apply w-full overflow-hidden rounded-2xl border border-brand-200/70 bg-white/95 shadow-soft;
+  }
+
+  .ui-table-head {
+    @apply bg-brand-800 text-sm font-semibold text-white;
+  }
+
+  .ui-table-row {
+    @apply border-b border-brand-100 transition hover:bg-brand-50/70;
+  }
+}

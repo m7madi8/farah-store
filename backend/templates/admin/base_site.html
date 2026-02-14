@@ -1,0 +1,83 @@
+{% extends "admin/base.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "Chef Farah Ammar" %}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=El+Messiri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'admin/css/admin-tailwind.css' %}">
+{% endblock %}
+
+{% block extrahead %}
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var body = document.body;
+    var filterPanel = document.getElementById('changelist-filter');
+    var filterToggle = document.getElementById('mobile-filter-toggle');
+
+    if (filterPanel && filterToggle) {
+      filterToggle.hidden = false;
+      filterToggle.addEventListener('click', function () {
+        body.classList.toggle('filters-open');
+      });
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') body.classList.remove('filters-open');
+      });
+    }
+
+    var tables = document.querySelectorAll('.results table');
+    tables.forEach(function (table) {
+      var headers = Array.from(table.querySelectorAll('thead th')).map(function (th) {
+        return (th.textContent || '').trim();
+      });
+      table.querySelectorAll('tbody tr').forEach(function (row) {
+        row.querySelectorAll('td').forEach(function (cell, index) {
+          if (!cell.getAttribute('data-label') && headers[index]) {
+            cell.setAttribute('data-label', headers[index]);
+          }
+        });
+      });
+    });
+  });
+</script>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">{% trans "Chef Farah Ammar" %}</a></h1>
+{% endblock %}
+
+{% block usertools %}
+{{ block.super }}
+{% if has_permission %}
+<a class="admin-top-link" href="{% url 'admin:vendor_profile' %}">{% trans "Vendor profile" %}</a>
+{% endif %}
+{% endblock %}
+
+{% block nav-global %}
+{% if has_permission %}
+<div class="admin-top-actions">
+  <a class="admin-top-action" href="{% url 'admin:index' %}">{% trans "Dashboard" %}</a>
+  <a class="admin-top-action" href="{% url 'admin:orders_order_changelist' %}">{% trans "Orders" %}</a>
+  <a class="admin-top-action" href="{% url 'admin:products_product_changelist' %}">{% trans "Products" %}</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block footer %}
+<div id="footer"></div>
+{% if has_permission %}
+<button id="mobile-filter-toggle" class="mobile-filter-toggle" type="button" hidden>{% trans "Filters" %}</button>
+<a class="mobile-fab" href="{% url 'admin:products_product_add' %}" title="{% trans 'Add' %}">+</a>
+<nav class="mobile-bottom-nav" aria-label="{% trans 'Primary' %}">
+  <a href="{% url 'admin:index' %}" class="mobile-bottom-link">🏠<span>{% trans "Home" %}</span></a>
+  <a href="{% url 'admin:orders_order_changelist' %}" class="mobile-bottom-link">🧾<span>{% trans "Orders" %}</span></a>
+  <a href="{% url 'admin:products_product_changelist' %}" class="mobile-bottom-link">📦<span>{% trans "Products" %}</span></a>
+  <a href="{% url 'admin:index' %}#dashboard-analytics" class="mobile-bottom-link">📊<span>{% trans "Analytics" %}</span></a>
+  <a href="{% url 'admin:vendor_profile' %}" class="mobile-bottom-link">⚙️<span>{% trans "Settings" %}</span></a>
+</nav>
+{% endif %}
+{% endblock %}

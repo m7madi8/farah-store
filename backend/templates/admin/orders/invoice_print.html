@@ -1,0 +1,79 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block content %}
+<div class="admin-panel invoice-shell invoice-shell-compact">
+  <div class="invoice-watermark" aria-hidden="true">
+    <img src="{% static 'img/logo.webp' %}" alt="">
+  </div>
+  <div class="invoice-header">
+    <div>
+      <h1 class="orders-focus-title">{% trans "Electronic Invoice" %}</h1>
+      <p class="orders-focus-subtitle">{% trans "Chef" %}: Chef Farah Ammar</p>
+    </div>
+    <div class="order-action-group no-print">
+      <button class="order-action-btn order-action-btn-open" type="button" onclick="window.print()">{% trans "Print" %}</button>
+      <a class="order-action-btn order-action-btn-view" href="{% url 'admin:orders_order_window' order.id %}">{% trans "Back to order" %}</a>
+    </div>
+  </div>
+
+  <div class="admin-panel invoice-customer-panel" style="margin-bottom: 0.75rem;">
+    <div class="invoice-compact-grid">
+      <div class="invoice-inline-field">
+        <span>{% trans "Name" %}</span>
+        <strong>{{ order.customer_name }}</strong>
+      </div>
+      <div class="invoice-inline-field">
+        <span>{% trans "Phone" %}</span>
+        <strong>{{ order.customer_phone }}</strong>
+      </div>
+      <div class="invoice-inline-field invoice-inline-field-full">
+        <span>{% trans "Address" %}</span>
+        <strong>{{ order.shipping_address }}</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="results orders-results-table invoice-items-table">
+    <table id="result_list">
+      <thead>
+        <tr>
+          <th>{% trans "Order item" %}</th>
+          <th>{% trans "Quantity" %}</th>
+          <th>{% trans "Item value" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in order.items.all %}
+        <tr>
+          <td>{{ item.product_snapshot.name_en|default:item.product.name_en|default:"-" }}</td>
+          <td class="invoice-qty-cell">{{ item.quantity }}</td>
+          <td>{{ item.total }} {{ order.currency }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="admin-panel invoice-customer-panel" style="margin-top: 0.75rem;">
+    <div class="invoice-compact-grid">
+      <div class="invoice-inline-field invoice-inline-field-full">
+        <span>{% trans "Order total" %}</span>
+        <strong>{{ order.total }} {{ order.currency }}</strong>
+      </div>
+      {% if order.shipping_amount %}
+      <div class="invoice-inline-field">
+        <span>{% trans "Shipping" %}</span>
+        <strong>{{ order.shipping_amount }} {{ order.currency }}</strong>
+      </div>
+      {% endif %}
+      {% if order.tax_amount %}
+      <div class="invoice-inline-field">
+        <span>{% trans "Tax (VAT)" %}</span>
+        <strong>{{ order.tax_amount }} {{ order.currency }}</strong>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
