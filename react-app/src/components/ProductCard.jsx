@@ -1,9 +1,9 @@
 /**
  * ProductCard — single product preview card for the shop grid.
- * Shows image, title, price, description; "View product" link only for products with a detail page.
- * Products in NO_DETAIL_PAGE_SLUGS have no product page — card links nowhere, only Add to cart.
+ * For products with variants (e.g. date balls), size selection is required before add to cart.
  */
 
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
@@ -36,14 +36,31 @@ export function ProductCard({ product, onShowToast }) {
 
   const name = lang === 'ar' && product.nameAr ? product.nameAr : product.name;
   const desc = lang === 'ar' && product.descriptionAr ? product.descriptionAr : product.description;
+  const hasVariants = product.variants && product.variants.length > 0;
+  const [selectedVariantIndex, setSelectedVariantIndex] = useState(null);
+
+  const selectedVariant = hasVariants && selectedVariantIndex != null ? product.variants[selectedVariantIndex] : null;
+  const canAddToCart = !hasVariants || selectedVariant != null;
+  const displayNameForCart = selectedVariant
+    ? `${name} (${lang === 'ar' ? selectedVariant.labelAr : selectedVariant.labelEn})`
+    : name;
+  const priceForCart = selectedVariant ? selectedVariant.price : product.price;
+
   const badgeKey = product.badge === 'Sauce' ? 'product.badgeSauce' : product.badge === 'Accessory' ? 'product.badgeAccessory' : 'product.badge';
   const badge = t(badgeKey);
 
   const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    addItem({ ...product, name });
+    if (!canAddToCart) return;
+    addItem({ ...product, name: displayNameForCart, price: priceForCart });
     onShowToast?.();
+  };
+
+  const handleVariantClick = (e, index) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedVariantIndex(index);
   };
 
   const cardContent = (
@@ -70,10 +87,29 @@ export function ProductCard({ product, onShowToast }) {
       </div>
       <div className="product-preview-body">
         <h3 className="product-preview-title">{name}</h3>
-        <div className="product-preview-price-wrap">
-          <span className="product-preview-price">{product.price}</span>
-          <span className="product-preview-currency">₪</span>
-        </div>
+        {hasVariants ? (
+          <div className="product-preview-variants" onClick={(e) => e.stopPropagation()}>
+            {product.variants.map((v, i) => (
+              <button
+                key={v.key}
+                type="button"
+                className={`product-preview-variant ${i === selectedVariantIndex ? 'selected' : ''}`}
+                onClick={(e) => handleVariantClick(e, i)}
+                aria-pressed={i === selectedVariantIndex}
+                aria-label={`${lang === 'ar' ? v.labelAr : v.labelEn} — ${v.price} ₪`}
+              >
+                <span className="product-preview-variant-label">{lang === 'ar' ? v.labelAr : v.labelEn}</span>
+                <span className="product-preview-variant-sep" aria-hidden="true">·</span>
+                <strong className="product-preview-variant-price">{v.price} ₪</strong>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="product-preview-price-wrap">
+            <span className="product-preview-price">{product.price}</span>
+            <span className="product-preview-currency">₪</span>
+          </div>
+        )}
         <p className={`product-preview-desc ${product.slug === 'chop-sticks' ? 'product-preview-chop-note' : ''}`}>
           {desc}
         </p>
@@ -105,11 +141,13 @@ export function ProductCard({ product, onShowToast }) {
       )}
       <button
         type="button"
-        className="product-preview-add-cart"
+        className={`product-preview-add-cart ${!canAddToCart ? 'product-preview-add-cart--disabled' : ''}`}
         onClick={handleAddToCart}
+        disabled={!canAddToCart}
+        title={!canAddToCart ? (lang === 'ar' ? 'اختر الحجم أولاً' : 'Choose size first') : undefined}
       >
         <i className="bi bi-cart-plus" />
-        <span>{t('product.addToCart')}</span>
+        <span>{canAddToCart ? t('product.addToCart') : t('product.chooseSize')}</span>
       </button>
     </div>
   );

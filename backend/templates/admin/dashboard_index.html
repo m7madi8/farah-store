@@ -4,58 +4,164 @@
 {% block content %}
 {% if analytics %}
 <div class="dashboard-analytics" id="dashboard-analytics">
-  <div class="admin-panel mobile-quick-actions" style="margin-bottom: 1rem;">
-    <h3 class="admin-panel-title">{% trans "Quick access" %}</h3>
-    <div class="order-action-group">
-      <a class="order-action-btn order-action-btn-open" href="{% url 'admin:orders_order_changelist' %}">
-        {% trans "Open orders" %}
+  <!-- Quick Actions -->
+  <div class="mb-8 overflow-hidden rounded-2xl bg-white shadow-admin">
+    <div class="border-b border-adminBrand-50 bg-adminBrand-50/50 px-6 py-4">
+      <h3 class="flex items-center gap-2 text-lg font-bold text-adminBrand-900">
+        <i data-lucide="zap" class="h-5 w-5 text-adminBrand-600"></i>
+        {% trans "Quick Actions" %}
+      </h3>
+    </div>
+    <div class="grid grid-cols-1 gap-4 p-6 sm:grid-cols-3">
+      <a href="{% url 'admin:orders_order_changelist' %}"
+        class="group flex items-center gap-4 rounded-xl border border-adminBrand-100 p-4 transition-all hover:border-adminBrand-500 hover:bg-adminBrand-50">
+        <div
+          class="flex h-12 w-12 items-center justify-center rounded-lg bg-adminBrand-100 text-adminBrand-600 group-hover:bg-adminBrand-600 group-hover:text-white">
+          <i data-lucide="shopping-bag" class="h-6 w-6"></i>
+        </div>
+        <div>
+          <span class="block font-bold text-adminBrand-900">{% trans "Open orders" %}</span>
+          <span class="text-xs text-adminBrand-500">{% trans "Manage customer purchases" %}</span>
+        </div>
       </a>
-      <a class="order-action-btn order-action-btn-open" href="{% url 'admin:orders_order_statement' %}">
-        {% trans "Orders statement" %}
+      <a href="{% url 'admin:orders_order_statement' %}"
+        class="group flex items-center gap-4 rounded-xl border border-adminBrand-100 p-4 transition-all hover:border-adminBrand-500 hover:bg-adminBrand-50">
+        <div
+          class="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white">
+          <i data-lucide="file-text" class="h-6 w-6"></i>
+        </div>
+        <div>
+          <span class="block font-bold text-adminBrand-900">{% trans "Orders statement" %}</span>
+          <span class="text-xs text-adminBrand-500">{% trans "Financial reports & overview" %}</span>
+        </div>
       </a>
-      <a class="order-action-btn order-action-btn-view" href="{% url 'admin:vendor_profile' %}">
-        {% trans "Vendor profile" %}
+      <a href="{% url 'admin:vendor_profile' %}"
+        class="group flex items-center gap-4 rounded-xl border border-adminBrand-100 p-4 transition-all hover:border-adminBrand-500 hover:bg-adminBrand-50">
+        <div
+          class="flex h-12 w-12 items-center justify-center rounded-lg bg-sky-100 text-sky-600 group-hover:bg-sky-600 group-hover:text-white">
+          <i data-lucide="user-cog" class="h-6 w-6"></i>
+        </div>
+        <div>
+          <span class="block font-bold text-adminBrand-900">{% trans "Vendor profile" %}</span>
+          <span class="text-xs text-adminBrand-500">{% trans "Edit profile & settings" %}</span>
+        </div>
       </a>
     </div>
   </div>
-  <h2 class="admin-panel-title">{% trans "Analytics Overview" %}</h2>
-  <div class="admin-dashboard-grid analytics-overview-grid">
-    <div class="admin-stat-card">
-      <p class="admin-stat-label">{% trans "Active users" %}</p>
-      <p class="admin-stat-value">{{ analytics.users_count }}</p>
+
+  <h2 class="mb-4 flex items-center gap-2 text-2xl font-bold text-adminBrand-900">
+    <i data-lucide="bar-chart-3" class="h-6 w-6 text-adminBrand-600"></i>
+    {% trans "Analytics Overview" %}
+  </h2>
+
+  <!-- Stats Grid -->
+  <div class="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <!-- Active Users -->
+    <div class="admin-stat-card group">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="admin-stat-label">{% trans "Active users" %}</p>
+          <p class="admin-stat-value">{{ analytics.users_count }}</p>
+        </div>
+        <div
+          class="flex h-10 w-10 items-center justify-center rounded-full bg-adminBrand-50 text-adminBrand-600 transition-colors group-hover:bg-adminBrand-600 group-hover:text-white">
+          <i data-lucide="users" class="h-5 w-5"></i>
+        </div>
+      </div>
     </div>
-    <div class="admin-stat-card">
-      <p class="admin-stat-label">{% trans "Products" %}</p>
-      <p class="admin-stat-value">{{ analytics.products_count }}</p>
+
+    <!-- Products -->
+    <div class="admin-stat-card group">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="admin-stat-label">{% trans "Products" %}</p>
+          <p class="admin-stat-value">{{ analytics.products_count }}</p>
+        </div>
+        <div
+          class="flex h-10 w-10 items-center justify-center rounded-full bg-sky-100 text-sky-600 transition-colors group-hover:bg-sky-600 group-hover:text-white">
+          <i data-lucide="package" class="h-5 w-5"></i>
+        </div>
+      </div>
     </div>
-    <div class="admin-stat-card">
-      <p class="admin-stat-label">{% trans "Orders" %}</p>
-      <p class="admin-stat-value">{{ analytics.orders_count }}</p>
+
+    <!-- Orders -->
+    <div class="admin-stat-card group border-b-4 border-b-adminBrand-500">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="admin-stat-label">{% trans "Total Orders" %}</p>
+          <p class="admin-stat-value">{{ analytics.orders_count }}</p>
+        </div>
+        <div
+          class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 transition-colors group-hover:bg-emerald-600 group-hover:text-white">
+          <i data-lucide="shopping-cart" class="h-5 w-5"></i>
+        </div>
+      </div>
     </div>
-    <div class="admin-stat-card">
-      <p class="admin-stat-label">{% trans "Sales today" %}</p>
-      <p class="admin-stat-value">{{ analytics.sales_daily|floatformat:2 }} ILS</p>
+
+    <!-- Active Orders -->
+    <div class="admin-stat-card group">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="admin-stat-label">{% trans "Active Orders" %}</p>
+          <p class="admin-stat-value">{{ analytics.active_orders_count }}</p>
+        </div>
+        <div
+          class="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-amber-600 transition-colors group-hover:bg-amber-600 group-hover:text-white">
+          <i data-lucide="clock" class="h-5 w-5"></i>
+        </div>
+      </div>
     </div>
-    <div class="admin-stat-card">
-      <p class="admin-stat-label">{% trans "Sales (7 days)" %}</p>
-      <p class="admin-stat-value">{{ analytics.sales_weekly|floatformat:2 }} ILS</p>
+
+    <!-- Sales Today -->
+    <div class="admin-stat-card group bg-adminBrand-900">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-wider text-adminBrand-300">{% trans "Sales Today" %}</p>
+          <p class="mt-2 text-2xl font-bold text-white">{{ analytics.sales_daily|floatformat:2 }} ILS</p>
+        </div>
+        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-adminBrand-800 text-adminBrand-400">
+          <i data-lucide="trending-up" class="h-5 w-5"></i>
+        </div>
+      </div>
     </div>
-    <div class="admin-stat-card">
-      <p class="admin-stat-label">{% trans "Sales (this month)" %}</p>
-      <p class="admin-stat-value">{{ analytics.sales_monthly|floatformat:2 }} ILS</p>
+
+    <!-- Sales Weekly -->
+    <div class="admin-stat-card group">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="admin-stat-label">{% trans "7 Days Sales" %}</p>
+          <p class="admin-stat-value">{{ analytics.sales_weekly|floatformat:2 }} ILS</p>
+        </div>
+        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-adminBrand-50 text-adminBrand-600">
+          <i data-lucide="calendar" class="h-5 w-5"></i>
+        </div>
+      </div>
     </div>
-    <div class="admin-stat-card">
-      <p class="admin-stat-label">{% trans "Total sales" %}</p>
-      <p class="admin-stat-value">{{ analytics.total_sales_all|floatformat:2 }} ILS</p>
+
+    <!-- Sales Monthly -->
+    <div class="admin-stat-card group">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="admin-stat-label">{% trans "This Month" %}</p>
+          <p class="admin-stat-value">{{ analytics.sales_monthly|floatformat:2 }} ILS</p>
+        </div>
+        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-adminBrand-50 text-adminBrand-600">
+          <i data-lucide="layers" class="h-5 w-5"></i>
+        </div>
+      </div>
     </div>
-    <div class="admin-stat-card">
-      <p class="admin-stat-label">{% trans "Active orders" %}</p>
-      <p class="admin-stat-value">{{ analytics.active_orders_count }}</p>
-    </div>
-    <div class="admin-stat-card">
-      <p class="admin-stat-label">{% trans "Coupons used" %}</p>
-      <p class="admin-stat-value">{{ analytics.coupons_uses_total }}</p>
-      <p class="text-sm text-adminBrand-600">{% trans "Orders with coupon:" %} {{ analytics.orders_with_coupon }}</p>
+
+    <!-- Total Sales -->
+    <div class="admin-stat-card group bg-indigo-600">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-wider text-indigo-100">{% trans "Total Sales All" %}</p>
+          <p class="mt-2 text-2xl font-bold text-white">{{ analytics.total_sales_all|floatformat:2 }} ILS</p>
+        </div>
+        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-500 text-white">
+          <i data-lucide="gem" class="h-5 w-5"></i>
+        </div>
+      </div>
     </div>
   </div>
   {% if analytics.best_sellers %}
@@ -69,73 +175,87 @@
   </div>
   {% endif %}
   {% if analytics.recent_orders %}
-  <div class="admin-panel orders-focus-panel" style="margin-top: 1rem;">
-    <div class="orders-focus-header">
-      <h3 class="admin-panel-title orders-focus-title">{% trans "Order Management Section" %}</h3>
-      <a class="order-action-btn order-action-btn-open" href="{% url 'admin:orders_order_changelist' %}">
-        {% trans "Open all orders" %}
+  <div class="mt-8 overflow-hidden rounded-2xl bg-white shadow-admin">
+    <div
+      class="flex flex-wrap items-center justify-between gap-4 border-b border-adminBrand-100 bg-adminBrand-50/30 px-6 py-5">
+      <div>
+        <h3 class="text-xl font-bold text-adminBrand-900">{% trans "Recent Orders" %}</h3>
+        <p class="text-sm text-adminBrand-500">{% trans "Accept or manage new incoming orders." %}</p>
+      </div>
+      <a class="inline-flex items-center gap-2 rounded-xl bg-adminBrand-800 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-adminBrand-700"
+        href="{% url 'admin:orders_order_changelist' %}">
+        <i data-lucide="external-link" class="h-4 w-4"></i>
+        {% trans "View All Orders" %}
       </a>
     </div>
-    <p class="orders-focus-subtitle">{% trans "Accept or delete orders quickly from this section." %}</p>
-    <div class="results orders-results-table">
-      <table id="result_list">
+
+    <div class="results-desktop hidden md:block overflow-x-auto">
+      <table class="w-full text-left border-collapse">
         <thead>
-          <tr>
-            <th>{% trans "Order" %}</th>
-            <th>{% trans "Customer" %}</th>
-            <th>{% trans "Phone" %}</th>
-            <th>{% trans "Status" %}</th>
-            <th>{% trans "Product names" %}</th>
-            <th>{% trans "Quantities" %}</th>
-            <th>{% trans "Total" %}</th>
-            <th>{% trans "Created" %}</th>
-            <th>{% trans "Actions" %}</th>
+          <tr class="bg-adminBrand-50/50 text-xs font-bold uppercase tracking-wider text-adminBrand-600">
+            <th class="px-6 py-4">{% trans "Order ID" %}</th>
+            <th class="px-6 py-4">{% trans "Customer" %}</th>
+            <th class="px-6 py-4">{% trans "Status" %}</th>
+            <th class="px-6 py-4">{% trans "Products" %}</th>
+            <th class="px-6 py-4 text-right">{% trans "Total" %}</th>
+            <th class="px-6 py-4 text-center">{% trans "Actions" %}</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody class="divide-y divide-adminBrand-50">
           {% for order in analytics.recent_orders %}
-          <tr>
-            <td>
-              <a href="{% url 'admin:orders_order_change' order.id %}">{{ order.public_id }}</a>
+          <tr class="transition hover:bg-adminBrand-50/30">
+            <td class="px-6 py-4">
+              <a href="{% url 'admin:orders_order_change' order.id %}"
+                class="font-mono font-bold text-adminBrand-600 hover:text-adminBrand-800">
+                #{{ order.public_id }}
+              </a>
+              <div class="text-[10px] text-adminBrand-400">{{ order.created_at|date:"M d, H:i" }}</div>
             </td>
-            <td>{{ order.customer_name }}</td>
-            <td>{{ order.customer_phone }}</td>
-            <td><span class="status-badge status-badge-{{ order.status }}">{{ order.get_status_display }}</span></td>
-            <td>
-              <div class="order-lines">
-                {% for item in order.items.all %}
-                  <div class="order-line">
-                    {{ item.product_snapshot.name_en|default:item.product.name_en|default:"-" }}
-                  </div>
-                {% empty %}
-                  <div class="order-line">-</div>
+            <td class="px-6 py-4">
+              <div class="font-bold text-adminBrand-900">{{ order.customer_name }}</div>
+              <div class="text-xs text-adminBrand-500">{{ order.customer_phone }}</div>
+            </td>
+            <td class="px-6 py-4">
+              <span class="status-badge status-badge-{{ order.status }}">
+                {{ order.get_status_display }}
+              </span>
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex flex-col gap-1">
+                {% for item in order.items.all|slice:":2" %}
+                <div
+                  class="flex items-center gap-2 rounded-lg bg-adminBrand-50 px-2 py-1 text-[11px] text-adminBrand-700">
+                  <span class="truncate max-w-[120px]">{{ item.product_snapshot.name_en|default:item.product.name_en
+                    }}</span>
+                  <span class="ml-auto font-bold">x{{ item.quantity }}</span>
+                </div>
                 {% endfor %}
+                {% if order.items.count > 2 %}
+                <div class="text-[10px] text-adminBrand-400 pl-2">+ {{ order.items.count|add:"-2" }} more</div>
+                {% endif %}
               </div>
             </td>
-            <td>
-              <div class="order-lines order-lines-qty">
-                {% for item in order.items.all %}
-                  <div class="order-line">{{ item.quantity }}</div>
-                {% empty %}
-                  <div class="order-line">-</div>
-                {% endfor %}
-              </div>
+            <td class="px-6 py-4 text-right border-0">
+              <div class="font-bold text-adminBrand-900">{{ order.total }}</div>
+              <div class="text-[10px] font-bold text-adminBrand-400 uppercase">{{ order.currency }}</div>
             </td>
-            <td>{{ order.total }} {{ order.currency }}</td>
-            <td>{{ order.created_at }}</td>
-            <td>
-              <div class="order-action-group">
-                <a class="order-action-btn order-action-btn-accept" href="{% url 'admin:orders_order_accept' order.id %}">
-                  {% trans "Accept" %}
+            <td class="px-6 py-4 border-0">
+              <div class="flex justify-center gap-2">
+                <a class="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 transition hover:bg-emerald-600 hover:text-white"
+                  href="{% url 'admin:orders_order_accept' order.id %}" title="{% trans " Accept" %}">
+                  <i data-lucide="check" class="h-4 w-4"></i>
                 </a>
-                <a class="order-action-btn order-action-btn-view" href="{% url 'admin:orders_order_window' order.id %}">
-                  {% trans "View" %}
+                <a class="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-100 text-sky-600 transition hover:bg-sky-600 hover:text-white"
+                  href="{% url 'admin:orders_order_window' order.id %}" title="{% trans " View" %}">
+                  <i data-lucide="eye" class="h-4 w-4"></i>
                 </a>
-                <a class="order-action-btn order-action-btn-open" href="{% url 'admin:orders_order_invoice' order.id %}">
-                  {% trans "Invoice" %}
+                <a class="flex h-9 w-9 items-center justify-center rounded-lg bg-adminBrand-100 text-adminBrand-600 transition hover:bg-adminBrand-600 hover:text-white"
+                  href="{% url 'admin:orders_order_invoice' order.id %}" title="{% trans " Invoice" %}">
+                  <i data-lucide="printer" class="h-4 w-4"></i>
                 </a>
-                <a class="order-action-btn order-action-btn-delete" href="{% url 'admin:orders_order_delete' order.id %}">
-                  {% trans "Delete" %}
+                <a class="flex h-9 w-9 items-center justify-center rounded-lg bg-rose-100 text-rose-600 transition hover:bg-rose-600 hover:text-white"
+                  href="{% url 'admin:orders_order_delete' order.id %}" title="{% trans " Delete" %}">
+                  <i data-lucide="trash-2" class="h-4 w-4"></i>
                 </a>
               </div>
             </td>
@@ -144,34 +264,46 @@
         </tbody>
       </table>
     </div>
-    <div class="orders-mobile-cards">
+
+    <!-- Mobile View -->
+    <div class="md:hidden divide-y divide-adminBrand-50">
       {% for order in analytics.recent_orders %}
-      <article class="order-mobile-card">
-        <div class="order-mobile-top">
-          <a class="order-mobile-id" href="{% url 'admin:orders_order_change' order.id %}">{{ order.public_id }}</a>
+      <div class="p-6">
+        <div class="mb-4 flex items-center justify-between">
+          <a href="{% url 'admin:orders_order_change' order.id %}" class="font-mono font-bold text-adminBrand-800">#{{
+            order.public_id }}</a>
           <span class="status-badge status-badge-{{ order.status }}">{{ order.get_status_display }}</span>
         </div>
-        <div class="order-mobile-row"><span>{% trans "Customer" %}</span><strong>{{ order.customer_name }}</strong></div>
-        <div class="order-mobile-row"><span>{% trans "Phone" %}</span><strong>{{ order.customer_phone }}</strong></div>
-        <div class="order-mobile-row"><span>{% trans "Total" %}</span><strong>{{ order.total }} {{ order.currency }}</strong></div>
-        <div class="order-mobile-row"><span>{% trans "Date" %}</span><strong>{{ order.created_at }}</strong></div>
-        <div class="order-mobile-products">
-          {% for item in order.items.all %}
-          <div class="order-mobile-product">
-            <span>{{ item.product_snapshot.name_en|default:item.product.name_en|default:"-" }}</span>
-            <strong>x{{ item.quantity }}</strong>
+        <div class="mb-4 grid grid-cols-2 gap-4">
+          <div>
+            <div class="text-[10px] font-bold uppercase tracking-widest text-adminBrand-400">{% trans "Customer" %}
+            </div>
+            <div class="text-sm font-bold text-adminBrand-900">{{ order.customer_name }}</div>
           </div>
-          {% empty %}
-          <div class="order-mobile-product"><span>-</span><strong>-</strong></div>
+          <div class="text-right">
+            <div class="text-[10px] font-bold uppercase tracking-widest text-adminBrand-400">{% trans "Amount" %}</div>
+            <div class="text-sm font-bold text-adminBrand-900">{{ order.total }} {{ order.currency }}</div>
+          </div>
+        </div>
+        <div class="mb-4 rounded-xl bg-adminBrand-50 p-3">
+          {% for item in order.items.all %}
+          <div class="mb-1 flex items-center justify-between text-xs text-adminBrand-700 last:mb-0">
+            <span>{{ item.product_snapshot.name_en|default:item.product.name_en }}</span>
+            <span class="font-bold">x{{ item.quantity }}</span>
+          </div>
           {% endfor %}
         </div>
-        <div class="order-action-group">
-          <a class="order-action-btn order-action-btn-accept" href="{% url 'admin:orders_order_accept' order.id %}">{% trans "Accept" %}</a>
-          <a class="order-action-btn order-action-btn-view" href="{% url 'admin:orders_order_window' order.id %}">{% trans "View" %}</a>
-          <a class="order-action-btn order-action-btn-open" href="{% url 'admin:orders_order_invoice' order.id %}">{% trans "Invoice" %}</a>
-          <a class="order-action-btn order-action-btn-delete" href="{% url 'admin:orders_order_delete' order.id %}">{% trans "Delete" %}</a>
+        <div class="grid grid-cols-4 gap-2">
+          <a class="flex h-11 items-center justify-center rounded-xl bg-emerald-600 text-white"
+            href="{% url 'admin:orders_order_accept' order.id %}"><i data-lucide="check" class="h-5 w-5"></i></a>
+          <a class="flex h-11 items-center justify-center rounded-xl bg-sky-600 text-white"
+            href="{% url 'admin:orders_order_window' order.id %}"><i data-lucide="eye" class="h-5 w-5"></i></a>
+          <a class="flex h-11 items-center justify-center rounded-xl bg-adminBrand-600 text-white"
+            href="{% url 'admin:orders_order_invoice' order.id %}"><i data-lucide="printer" class="h-5 w-5"></i></a>
+          <a class="flex h-11 items-center justify-center rounded-xl bg-rose-600 text-white"
+            href="{% url 'admin:orders_order_delete' order.id %}"><i data-lucide="trash-2" class="h-5 w-5"></i></a>
         </div>
-      </article>
+      </div>
       {% endfor %}
     </div>
   </div>

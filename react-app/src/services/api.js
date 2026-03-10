@@ -14,6 +14,7 @@ const FEATURED_ORDER_BY_SLUG = {
   'buffalo-sauce': 5,
   'sweet-chili-sauce': 6,
   'chop-sticks': 7,
+  'date-balls-chocolate': 8,
 };
 
 function localImageBySlug(slug) {
@@ -38,6 +39,26 @@ const MOCK_PRODUCTS = [
   { id: '5', slug: 'buffalo-sauce', name: 'Buffalo sauce', nameAr: 'صلصة بافلو', description: 'Spicy buffalo sauce for a bold kick.', descriptionAr: 'صلصة بافلو حارة لمذاق قوي.', price: 2, category: 'sauces', imageUrl: '/img/buffalo.webp', heroImage: '/img/buffalo.webp', order: 5, badge: 'Sauce', details: [] },
   { id: '6', slug: 'sweet-chili-sauce', name: 'Sweet chili sauce', nameAr: 'صلصة الفلفل الحلو', description: 'Sweet and tangy chili sauce for dipping.', descriptionAr: 'صلصة فلفل حلوة وحامضة للغمس.', price: 2, category: 'sauces', imageUrl: '/img/sweet-chili.webp', heroImage: '/img/sweet-chili.webp', order: 6, badge: 'Sauce', details: [] },
   { id: '7', slug: 'chop-sticks', name: 'Chop sticks', nameAr: 'عيدان الطعام', description: '1 ₪ per stick (not per pack).', descriptionAr: '1 ₪ للعود الواحد (وليس للمجموعة).', price: 1, category: 'chopsticks', imageUrl: '/img/chop-sticks.webp', heroImage: '/img/chop-sticks.webp', order: 7, badge: 'Accessory', details: [] },
+  {
+    id: '8',
+    slug: 'date-balls-chocolate',
+    name: 'Date balls with chocolate',
+    nameAr: 'كرات التمر بالشوكولاته',
+    description: 'Delicious date balls coated in chocolate. Two sizes available.',
+    descriptionAr: 'كرات تمر لذيذة مغطاة بالشوكولاته. حجمين متوفرين.',
+    price: 25,
+    category: 'boxes',
+    imageUrl: '/img/date-balls.webp',
+    heroImage: '/img/date-balls.webp',
+    order: 8,
+    badge: 'Signature',
+    details: [],
+    variants: [
+      { key: '7', labelEn: '7 pieces', labelAr: '٧ حبات', price: 25 },
+      { key: '16', labelEn: '16 pieces', labelAr: '١٦ حبة', price: 45 },
+    ],
+    images: ['/img/date-balls.webp'].concat([2, 3, 4, 5].map((n) => `/img/products/date-balls-chocolate/${n}.webp`)),
+  },
 ];
 
 async function request(path, options = {}) {
@@ -134,9 +155,8 @@ export async function fetchProducts() {
     const list = Array.isArray(raw) ? raw : [];
     return list.map(normalizeProduct);
   } catch (_) {
-    // No mock fallback when backend is configured. This keeps cart/product IDs
-    // aligned with Django DB so submitted orders can be saved and appear in admin.
-    return [];
+    // Fall back to mock products for development
+    return MOCK_PRODUCTS;
   }
 }
 

@@ -15,7 +15,6 @@ import { useCart } from '../context/CartContext';
 import { fetchProductBySlug } from '../services/api';
 
 const DETAIL_IMAGE_FALLBACK = '/img/2.webp';
-const DETAIL_PRODUCT_IMAGE = '/img/2.webp';
 const DETAIL_IMAGE_PLACEHOLDER =
   'data:image/svg+xml;utf8,' +
   encodeURIComponent(
@@ -41,6 +40,8 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [toastShow, setToastShow] = useState(false);
+  const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
+  const [galleryIndex, setGalleryIndex] = useState(0);
 
   // Products with no detail page: redirect to home
   useEffect(() => {
@@ -55,6 +56,8 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
     fetchProductBySlug(slug).then((p) => {
       if (!cancelled) {
         setProduct(p);
+        setSelectedVariantIndex(0);
+        setGalleryIndex(0);
         setLoading(false);
       }
     }).catch(() => {
@@ -62,6 +65,20 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
     });
     return () => { cancelled = true; };
   }, [slug]);
+
+  const name = lang === 'ar' && product?.nameAr ? product.nameAr : (product?.name || '');
+  const desc = lang === 'ar' && product?.descriptionAr ? product.descriptionAr : (product?.description || '');
+  const hasVariants = product?.variants && product.variants.length > 0;
+  const selectedVariant = hasVariants ? product.variants[selectedVariantIndex] : null;
+  const displayPrice = selectedVariant ? selectedVariant.price : (product?.price ?? 0);
+  const displayName = selectedVariant
+    ? `${name} (${lang === 'ar' ? selectedVariant.labelAr : selectedVariant.labelEn})`
+    : name;
+
+  const galleryImages = product?.images && product.images.length > 0 ? product.images : [product?.imageUrl || DETAIL_IMAGE_FALLBACK];
+  const mainImageSrc = galleryImages[galleryIndex] || galleryImages[0] || DETAIL_IMAGE_FALLBACK;
+
+  const isDateBalls = product?.slug === 'date-balls-chocolate';
 
   if (loading || !product) {
     return (
@@ -79,21 +96,22 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
     );
   }
 
-  const name = lang === 'ar' && product.nameAr ? product.nameAr : product.name;
-  const desc = lang === 'ar' && product.descriptionAr ? product.descriptionAr : product.description;
-
   const handleAddToCart = () => {
-    addItem(product);
+    addItem({
+      ...product,
+      name: displayName,
+      price: displayPrice,
+    });
     setToastShow(true);
   };
 
   const handleCashOnDelivery = () => {
-    addItem(product);
+    addItem({ ...product, name: displayName, price: displayPrice });
     navigate('/checkout');
   };
 
   const handlePayVisa = () => {
-    addItem(product);
+    addItem({ ...product, name: displayName, price: displayPrice });
     navigate('/checkout');
   };
 
@@ -102,12 +120,12 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
       <Navbar backToShop={false} alwaysShowBackground onCartClick={onCartOpen ? () => onCartOpen(true) : undefined} />
       <CartPanel isOpen={cartOpen} onClose={() => setCartOpen?.(false)} />
       <CartToast show={toastShow} onHide={() => setToastShow(false)} />
-      <main className="product-main">
-        <div className="product-hero">
+      <main className={`product-main ${isDateBalls ? 'product-main-date-balls' : ''}`}>
+        <div className={`product-hero ${isDateBalls ? 'product-hero-date-balls' : ''}`}>
           <div className="product-hero-image product-hero-anim">
             <picture>
               <img
-                src={DETAIL_PRODUCT_IMAGE}
+                src={mainImageSrc}
                 alt={name}
                 width="1200"
                 height="750"
@@ -124,6 +142,20 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
                 }}
               />
             </picture>
+            {galleryImages.length > 1 && (
+              <div className="product-gallery-dots" aria-label={lang === 'ar' ? 'اختر الصورة' : 'Select image'}>
+                {galleryImages.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    className={`product-gallery-dot ${i === galleryIndex ? 'active' : ''}`}
+                    onClick={() => setGalleryIndex(i)}
+                    aria-current={i === galleryIndex ? 'true' : undefined}
+                    aria-label={`${i + 1} / ${galleryImages.length}`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
           <div className="product-hero-overlay product-hero-anim" />
         </div>
@@ -145,8 +177,22 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
             </button>
             <header className="product-header">
               <h1 className="product-name">{name}</h1>
+              {hasVariants && (
+                <div className="product-variants" role="group" aria-label={lang === 'ar' ? 'اختر الحجم' : 'Choose size'}>
+                  {product.variants.map((v, i) => (
+                    <button
+                      key={v.key}
+                      type="button"
+                      className={`product-variant-btn ${i === selectedVariantIndex ? 'active' : ''}`}
+                      onClick={() => setSelectedVariantIndex(i)}
+                    >
+                      {lang === 'ar' ? v.labelAr : v.labelEn} — {v.price} ₪
+                    </button>
+                  ))}
+                </div>
+              )}
               <div className="product-preview-price-wrap">
-                <span className="product-preview-price">{product.price}</span>
+                <span className="product-preview-price">{displayPrice}</span>
                 <span className="product-preview-currency">₪</span>
               </div>
               <p className="product-lead">{desc}</p>

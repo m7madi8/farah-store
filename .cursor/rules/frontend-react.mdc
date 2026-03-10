@@ -1,0 +1,23 @@
+---
+description: React frontend — components, shop, and styles
+globs: react-app/**/*.jsx,react-app/**/*.js,react-app/**/*.css
+alwaysApply: false
+---
+
+# React Frontend Conventions
+
+## Structure
+- **Pages**: `HomePage.jsx`, `ProductDetailPage.jsx`, `CheckoutPage.jsx`. **Components**: `Navbar`, `Footer`, `Hero`, `ProductCard`, `CartPanel`, `OrderSummary`. Use `react-app/src/services/api.js` for `fetchProducts`, `fetchProductBySlug`, `submitOrder`.
+
+## Shop (HomePage)
+- Products grouped by category: **boxes**, **dateBalls** (slug `date-balls-chocolate`), **sauces**, **chopsticks**. Sections use `shop-category-section` and optional `shop-category-section--single` when only one product (no horizontal scroll).
+- **Mobile**: Dumpling boxes & Sauces — horizontal scroll, card ~82vw, padding ~6vw so next card peeks. Other sections — single column, centered card. **Desktop**: `shop-grid` uses `minmax(320px, 1fr)` at 1024px+ for larger cards.
+
+## ProductCard
+- Products with `variants` require selecting a size before Add to cart; use `selectedVariantIndex` and disable button until selected. Pass `productId`, `name`, `price`, `quantity` to cart.
+
+## Styles
+- Main CSS: `react-app/src/styles/style.css`. Product page: `react-app/src/styles/product.css`. Use existing classes (`product-preview`, `shop-grid`, `shop-category-section`, `product-preview-variant`, etc.). Prefer adding/modifying in these files rather than inline styles.
+
+## i18n
+- All user-facing strings via `t('key')` from `useLanguage()`. Keys live in `react-app/src/data/translations.js` (en + ar). Preserve RTL where applicable.

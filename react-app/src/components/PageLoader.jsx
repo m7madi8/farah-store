@@ -1,5 +1,5 @@
 /**
- * PageLoader — full-screen loading overlay with logo and bar, hidden when app is ready.
+ * PageLoader — full-screen loading overlay with logo and subtle dumpling orbit animation.
  */
 
 export function PageLoader({ visible }) {
@@ -7,16 +7,19 @@ export function PageLoader({ visible }) {
   return (
     <div className="page-loader" id="pageLoader">
       <div className="loader-inner">
-        <img
-          src="/img/logo.webp"
-          alt="Chef Farah Ammar"
-          className="loader-logo"
-          width="220"
-          height="110"
-          decoding="async"
-        />
-        <div className="loader-bar">
-          <span className="loader-bar-fill" />
+        <div className="loader-orbit">
+          <span className="loader-orbit-ring" />
+          <span className="loader-orbit-dot loader-orbit-dot-1" />
+          <span className="loader-orbit-dot loader-orbit-dot-2" />
+          <span className="loader-orbit-dot loader-orbit-dot-3" />
+          <img
+            src="/img/logo.webp"
+            alt="Chef Farah Ammar"
+            className="loader-logo"
+            width="220"
+            height="110"
+            decoding="async"
+          />
         </div>
       </div>
     </div>

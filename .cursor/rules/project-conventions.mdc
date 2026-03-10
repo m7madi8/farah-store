@@ -1,0 +1,23 @@
+---
+description: Core project conventions — stack, i18n, CORS, and structure
+alwaysApply: true
+---
+
+# Project Conventions — Nana's Bites / Chef Farah Ammar
+
+## Stack
+- **Backend**: Django (config/, apps.accounts, apps.products, apps.orders). REST API under `/api/`. Use `.env` for secrets; never commit `.env`.
+- **Frontend**: React (Vite) in `react-app/`. Routes: Home (`/`), Product detail (`/product/:slug`), Checkout (`/checkout`).
+- **API base**: Frontend uses `VITE_API_BASE` (e.g. `http://127.0.0.1:8000/api`). Backend CORS must allow the frontend origin via `CORS_ORIGINS` in backend `.env` (e.g. `http://localhost:3001,http://127.0.0.1:3001`).
+
+## i18n
+- UI is bilingual: **Arabic (ar)** and **English (en)**. Use `useLanguage()` and `t(key)` from `LanguageContext` and `translations.js`. Add new keys in both languages in `react-app/src/data/translations.js`.
+- Support RTL: use logical CSS (`margin-inline`, `padding-inline`, `inset-inline-start`) and `[dir="rtl"]` where needed.
+
+## Design
+- **Mobile-first**: Default styles target phones; use `@media (min-width: 768px)` and `@media (min-width: 1024px)` to scale up. Shop sections: horizontal scroll on mobile for Dumpling boxes & Sauces; single-column centered for Date balls & Add-ons.
+- **Brand**: Purple palette (`--deep-purple`, `--lavender`, `--soft-pink`, `--off-white`). Product cards: rounded, soft shadow, consistent aspect-ratio for images.
+
+## Key paths
+- Products API: `GET /api/products/`. Orders: `POST /api/orders/` (apps.orders). Products app: `apps/products/` (models, serializers, views).
+- Shop sections in `HomePage.jsx`: boxes, dateBalls (slug `date-balls-chocolate`), sauces, chopsticks. Category meta and section class names: `shop-category-boxes`, `shop-category-sauces`, etc.

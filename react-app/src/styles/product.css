@@ -140,7 +140,33 @@
   pointer-events: none;
 }
 
-/* Content: below hero */
+/* Gallery dots (multiple product images) */
+.product-gallery-dots {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  z-index: 2;
+}
+.product-gallery-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.8);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s, transform 0.2s;
+}
+.product-gallery-dot:hover {
+  background: rgba(255,255,255,0.5);
+}
+.product-gallery-dot.active {
+  background: #fff;
+  transform: scale(1.2);
+}
 .product-content {
   position: relative;
   background: var(--off-white);
@@ -198,6 +224,34 @@
   margin: 0 0 0.5rem;
   letter-spacing: 0.02em;
   line-height: 1.2;
+}
+
+/* Size/variant selector (e.g. 7 pieces / 16 pieces) */
+.product-variants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.product-variant-btn {
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--deep-purple);
+  background: rgba(122,92,142,0.15);
+  border: 2px solid var(--lavender);
+  border-radius: 12px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.product-variant-btn:hover {
+  background: rgba(122,92,142,0.25);
+}
+.product-variant-btn.active {
+  background: var(--deep-purple);
+  border-color: var(--deep-purple);
+  color: #fff;
 }
 
 .product-price {

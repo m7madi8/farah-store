@@ -1,0 +1,318 @@
+/* ==========================================================================
+   Admin Login — Chef Farah Ammar
+   صفحة تسجيل الدخول للوحة التحكم
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Variables (scoped to login page)
+   -------------------------------------------------------------------------- */
+body.login.login--new {
+  --login-bg-start: #1a1222;
+  --login-bg-mid: #2d1a3d;
+  --login-bg-accent: #3d224f;
+  --login-bg-end: #1f1528;
+  --login-card-bg: #ffffff;
+  --login-card-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.4);
+  --login-card-radius: 24px;
+  --login-text: #2d1a3d;
+  --login-text-muted: #6f5b83;
+  --login-border: #e5deeb;
+  --login-input-bg: #faf9f7;
+  --login-focus: #7a5c8e;
+  --login-focus-ring: rgba(122, 92, 142, 0.2);
+  --login-btn-bg: #4b2a63;
+  --login-btn-hover: #5c3877;
+  --login-link: #7a5c8e;
+  --login-error-bg: #fef2f2;
+  --login-error-text: #b91c1c;
+  --login-error-border: #fecaca;
+  --login-warning-bg: #fffbeb;
+  --login-warning-text: #b45309;
+  --login-warning-border: #fde68a;
+  --login-spacing: 1.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   Layout: full viewport, card in true center (equal space top & bottom)
+   -------------------------------------------------------------------------- */
+html:has(body.login.login--new) {
+  height: 100%;
+  margin: 0;
+}
+
+body.login.login--new {
+  margin: 0;
+  height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--login-spacing, 1.5rem);
+  box-sizing: border-box;
+  background: linear-gradient(
+    160deg,
+    var(--login-bg-start) 0%,
+    var(--login-bg-mid) 35%,
+    var(--login-bg-accent) 60%,
+    var(--login-bg-mid) 85%,
+    var(--login-bg-end) 100%
+  );
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Hide default admin chrome on login */
+body.login.login--new #header,
+body.login.login--new .breadcrumbs,
+body.login.login--new #nav-sidebar,
+body.login.login--new #footer,
+body.login.login--new .skip-to-content-link {
+  display: none !important;
+}
+
+/* Full-height chain so card is centered with equal space above and below */
+body.login.login--new #container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+body.login.login--new #content {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+body.login.login--new #content-main {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   Page wrapper + card (centered, equal distance from top and bottom)
+   -------------------------------------------------------------------------- */
+.login-page {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  flex-shrink: 0;
+}
+
+.login-card {
+  background: var(--login-card-bg);
+  border-radius: var(--login-card-radius);
+  box-shadow: var(--login-card-shadow), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  padding: 2.25rem 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.login-card__head {
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+.login-card__logo {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 1rem;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #4b2a63 0%, #7a5c8e 100%);
+  box-shadow: 0 8px 24px -6px rgba(75, 42, 99, 0.45);
+}
+
+.login-card__title {
+  margin: 0 0 0.25rem;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--login-text);
+  letter-spacing: 0.02em;
+}
+
+.login-card__subtitle {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--login-text-muted);
+  font-weight: 500;
+}
+
+/* --------------------------------------------------------------------------
+   Alerts (errors, warnings)
+   -------------------------------------------------------------------------- */
+.login-alert {
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  margin-bottom: 1.25rem;
+}
+
+.login-alert--error {
+  background: var(--login-error-bg);
+  color: var(--login-error-text);
+  border: 1px solid var(--login-error-border);
+}
+
+.login-alert--warning {
+  background: var(--login-warning-bg);
+  color: var(--login-warning-text);
+  border: 1px solid var(--login-warning-border);
+}
+
+/* --------------------------------------------------------------------------
+   Form: fields, labels, inputs
+   -------------------------------------------------------------------------- */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.login-field {
+  margin-bottom: 1.25rem;
+}
+
+.login-field__label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--login-text);
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.01em;
+}
+
+.login-field input[type="text"],
+.login-field input[type="email"],
+.login-field input[type="password"],
+#id_username,
+#id_password {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--login-text);
+  background: var(--login-input-bg);
+  border: 1px solid var(--login-border);
+  border-radius: 12px;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-field input:focus,
+#id_username:focus,
+#id_password:focus {
+  outline: none;
+  border-color: var(--login-focus);
+  box-shadow: 0 0 0 3px var(--login-focus-ring);
+}
+
+.login-field input::placeholder {
+  color: #9ca3af;
+}
+
+.login-field .errorlist {
+  list-style: none;
+  margin: 0.35rem 0 0;
+  padding: 0;
+  font-size: 0.8125rem;
+  color: var(--login-error-text);
+}
+
+.login-form__forgot {
+  margin-top: -0.25rem;
+  margin-bottom: 1.25rem;
+  text-align: center;
+}
+
+.login-form__link {
+  font-size: 0.8125rem;
+  color: var(--login-link);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.login-form__link:hover {
+  color: var(--login-btn-bg);
+  text-decoration: underline;
+}
+
+.login-form__submit {
+  margin-top: 0.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   Submit button
+   -------------------------------------------------------------------------- */
+.login-btn {
+  display: block;
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, var(--login-btn-bg) 0%, var(--login-btn-hover) 50%, var(--login-btn-bg) 100%);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px -3px rgba(75, 42, 99, 0.45);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.login-btn:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 6px 20px -4px rgba(75, 42, 99, 0.5);
+}
+
+.login-btn:active {
+  transform: scale(0.99);
+}
+
+/* --------------------------------------------------------------------------
+   Footer text
+   -------------------------------------------------------------------------- */
+.login-footer {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+@media (max-width: 480px) {
+  .login-card {
+    padding: 1.75rem 1.5rem;
+  }
+
+  .login-card__title {
+    font-size: 1.5rem;
+  }
+}

@@ -13,8 +13,10 @@
 
 {% block extrahead %}
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script src="https://unpkg.com/lucide@latest"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
+    lucide.createIcons();
     var body = document.body;
     var filterPanel = document.getElementById('changelist-filter');
     var filterToggle = document.getElementById('mobile-filter-toggle');

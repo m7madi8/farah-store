@@ -7,7 +7,7 @@
 {{ form.media }}
 {% endblock %}
 
-{% block bodyclass %}{{ block.super }} login{% endblock %}
+{% block bodyclass %}{{ block.super }} login login--new{% endblock %}
 
 {% block usertools %}{% endblock %}
 
@@ -20,53 +20,64 @@
 {% block nav-breadcrumbs %}{% endblock %}
 
 {% block content %}
-{% if form.errors and not form.non_field_errors %}
-<p class="errornote">
-{% blocktranslate count counter=form.errors.items|length %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktranslate %}
-</p>
-{% endif %}
-
-{% if form.non_field_errors %}
-{% for error in form.non_field_errors %}
-<p class="errornote">{{ error }}</p>
-{% endfor %}
-{% endif %}
-
-<div id="content-main">
-  <div class="login-brand">
-    <h2>{% trans "Chef Farah Ammar" %} — {% trans "Log in" %}</h2>
-  </div>
-
-  {% if user.is_authenticated %}
-  <p class="errornote">
-  {% blocktranslate trimmed %}
-    You are authenticated as {{ username }}, but are not authorized to
-    access this page. Would you like to login to a different account?
-  {% endblocktranslate %}
-  </p>
-  {% endif %}
-
-  <form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
-    <div class="form-row">
-      {{ form.username.errors }}
-      <label for="id_username">{% trans "Email address" %}</label>
-      {{ form.username }}
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-card__head">
+      <div class="login-card__logo" aria-hidden="true"></div>
+      <h1 class="login-card__title">{% trans "Chef Farah Ammar" %}</h1>
+      <p class="login-card__subtitle">{% trans "Log in" %}</p>
     </div>
-    <div class="form-row">
-      {{ form.password.errors }}
-      <label for="id_password">{% trans "Password" %}</label>
-      {{ form.password }}
-      <input type="hidden" name="next" value="{{ next }}">
-    </div>
-    {% url 'admin_password_reset' as password_reset_url %}
-    {% if password_reset_url %}
-    <div class="password-reset-link">
-      <a href="{{ password_reset_url }}">{% translate 'Forgotten your password or username?' %}</a>
+
+    {% if form.errors and not form.non_field_errors %}
+    <div class="login-alert login-alert--error" role="alert">
+      {% blocktranslate count counter=form.errors.items|length %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktranslate %}
     </div>
     {% endif %}
-    <div class="submit-row">
-      <input type="submit" value="{% translate 'Log in' %}">
+
+    {% if form.non_field_errors %}
+    {% for error in form.non_field_errors %}
+    <div class="login-alert login-alert--error" role="alert">{{ error }}</div>
+    {% endfor %}
+    {% endif %}
+
+    {% if user.is_authenticated %}
+    <div class="login-alert login-alert--warning" role="alert">
+      {% blocktranslate trimmed %}
+        You are authenticated as {{ username }}, but are not authorized to
+        access this page. Would you like to login to a different account?
+      {% endblocktranslate %}
     </div>
-  </form>
+    {% endif %}
+
+    <form action="{{ app_path }}" method="post" class="login-form" id="login-form">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+
+      <div class="login-field">
+        {{ form.username.errors }}
+        <label class="login-field__label" for="id_username">{% trans "Email address" %}</label>
+        {{ form.username }}
+      </div>
+
+      <div class="login-field">
+        {{ form.password.errors }}
+        <label class="login-field__label" for="id_password">{% trans "Password" %}</label>
+        {{ form.password }}
+      </div>
+
+      {% url 'admin_password_reset' as password_reset_url %}
+      {% if password_reset_url %}
+      <div class="login-form__forgot">
+        <a href="{{ password_reset_url }}" class="login-form__link">{% translate 'Forgotten your password or username?' %}</a>
+      </div>
+      {% endif %}
+
+      <div class="login-form__submit">
+        <button type="submit" class="login-btn">{% translate 'Log in' %}</button>
+      </div>
+    </form>
+  </div>
+
+  <p class="login-footer">{% trans "Chef Farah Ammar" %} — {% trans "Admin" %}</p>
 </div>
 {% endblock %}
