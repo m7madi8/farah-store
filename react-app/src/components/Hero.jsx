@@ -9,6 +9,10 @@ export function Hero() {
   const { t } = useLanguage();
   const tagline = t('hero.tagline');
 
+  const scrollToShop = () => {
+    document.getElementById('product')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   const parts = tagline.split(/(\s+)/).filter(Boolean);
   const delayPerUnit = 0.12;
 
@@ -38,6 +42,13 @@ export function Hero() {
             </span>
           ))}
         </p>
+        <button
+          type="button"
+          className="hero-shop-cta anim-fade-up"
+          onClick={scrollToShop}
+        >
+          {t('hero.shopNow')}
+        </button>
       </div>
       <div className="hero-scroll anim-fade">
         <span>{t('hero.scroll')}</span>

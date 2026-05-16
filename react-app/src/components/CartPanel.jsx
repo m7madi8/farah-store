@@ -1,5 +1,5 @@
 /**
- * CartPanel — slide-out cart drawer with item list, total, and checkout/Pay Visa buttons.
+ * CartPanel — slide-out cart drawer with item list, total, and checkout link.
  * Opens when user clicks cart icon in Navbar.
  */
 
@@ -71,14 +71,6 @@ export function CartPanel({ isOpen, onClose }) {
               onClick={onClose}
             >
               <span>{t('cart.orderViaWa')}</span>
-            </Link>
-            <Link
-              to="/checkout"
-              className="cart-panel-order cart-panel-pay-visa"
-              onClick={onClose}
-            >
-              <i className="bi bi-credit-card-2-front" />
-              <span>{t('cart.payVisa')}</span>
             </Link>
           </div>
         )}

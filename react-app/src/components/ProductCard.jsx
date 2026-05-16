@@ -113,12 +113,6 @@ export function ProductCard({ product, onShowToast }) {
         <p className={`product-preview-desc ${product.slug === 'chop-sticks' ? 'product-preview-chop-note' : ''}`}>
           {desc}
         </p>
-        {hasDetailPage && (
-          <span className="product-preview-cta">
-            {t('product.viewProduct')}
-            <i className="bi bi-arrow-right" aria-hidden="true" />
-          </span>
-        )}
       </div>
     </>
   );
@@ -139,16 +133,26 @@ export function ProductCard({ product, onShowToast }) {
           {cardContent}
         </div>
       )}
-      <button
-        type="button"
-        className={`product-preview-add-cart ${!canAddToCart ? 'product-preview-add-cart--disabled' : ''}`}
-        onClick={handleAddToCart}
-        disabled={!canAddToCart}
-        title={!canAddToCart ? (lang === 'ar' ? 'اختر الحجم أولاً' : 'Choose size first') : undefined}
+      <div
+        className={`product-preview-actions${hasDetailPage ? '' : ' product-preview-actions--single'}`}
       >
-        <i className="bi bi-cart-plus" />
-        <span>{canAddToCart ? t('product.addToCart') : t('product.chooseSize')}</span>
-      </button>
+        {hasDetailPage && (
+          <Link className="product-preview-view-btn" to={`/product/${product.slug}`}>
+            <span>{t('product.viewProduct')}</span>
+            <i className="bi bi-arrow-right" aria-hidden="true" />
+          </Link>
+        )}
+        <button
+          type="button"
+          className={`product-preview-add-cart ${!canAddToCart ? 'product-preview-add-cart--disabled' : ''}`}
+          onClick={handleAddToCart}
+          disabled={!canAddToCart}
+          title={!canAddToCart ? (lang === 'ar' ? 'اختر الحجم أولاً' : 'Choose size first') : undefined}
+        >
+          <i className="bi bi-cart-plus" aria-hidden="true" />
+          <span>{canAddToCart ? t('product.addToCart') : t('product.chooseSize')}</span>
+        </button>
+      </div>
     </div>
   );
 }

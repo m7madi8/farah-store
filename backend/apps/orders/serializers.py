@@ -102,7 +102,7 @@ class OrderCreateSerializer(serializers.Serializer):
     customer_email = serializers.EmailField(required=False, allow_blank=True)
     shipping_address = serializers.CharField()
     notes = serializers.CharField(required=False, allow_blank=True)
-    payment_method = serializers.ChoiceField(choices=["cod", "bank_card"])
+    payment_method = serializers.ChoiceField(choices=["cod"])
     coupon_code = serializers.CharField(required=False, allow_blank=True)
     items = OrderCreateItemSerializer(many=True)
 

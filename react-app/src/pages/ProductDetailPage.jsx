@@ -1,5 +1,5 @@
 /**
- * ProductDetailPage — single product view with hero image, details, and Add to cart / Pay buttons.
+ * ProductDetailPage — single product view with hero image, details, and Add to cart / COD checkout.
  * Data from API by slug (route param). Deep link: /product/:slug.
  */
 
@@ -15,6 +15,7 @@ import { useCart } from '../context/CartContext';
 import { fetchProductBySlug } from '../services/api';
 
 const DETAIL_IMAGE_FALLBACK = '/img/2.webp';
+const DUMPLING_HERO_BG_SLUGS = ['dumplings-chicken', 'dumplings-meat'];
 const DETAIL_IMAGE_PLACEHOLDER =
   'data:image/svg+xml;utf8,' +
   encodeURIComponent(
@@ -79,6 +80,7 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
   const mainImageSrc = galleryImages[galleryIndex] || galleryImages[0] || DETAIL_IMAGE_FALLBACK;
 
   const isDateBalls = product?.slug === 'date-balls-chocolate';
+  const isDumplingHeroBg = DUMPLING_HERO_BG_SLUGS.includes(product?.slug);
 
   if (loading || !product) {
     return (
@@ -110,18 +112,17 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
     navigate('/checkout');
   };
 
-  const handlePayVisa = () => {
-    addItem({ ...product, name: displayName, price: displayPrice });
-    navigate('/checkout');
-  };
-
   return (
     <>
       <Navbar backToShop={false} alwaysShowBackground onCartClick={onCartOpen ? () => onCartOpen(true) : undefined} />
       <CartPanel isOpen={cartOpen} onClose={() => setCartOpen?.(false)} />
       <CartToast show={toastShow} onHide={() => setToastShow(false)} />
       <main className={`product-main ${isDateBalls ? 'product-main-date-balls' : ''}`}>
-        <div className={`product-hero ${isDateBalls ? 'product-hero-date-balls' : ''}`}>
+        <div
+          className={`product-hero${isDateBalls ? ' product-hero-date-balls' : ''}${isDumplingHeroBg ? ' product-hero-dumplings' : ''}`}
+          {...(isDumplingHeroBg ? { role: 'img', 'aria-label': name } : {})}
+        >
+          {!isDumplingHeroBg && (
           <div className="product-hero-image product-hero-anim">
             <picture>
               <img
@@ -157,6 +158,7 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
               </div>
             )}
           </div>
+          )}
           <div className="product-hero-overlay product-hero-anim" />
         </div>
         <div className="product-content product-content-anim">
@@ -218,14 +220,6 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
                 >
                   <i className="bi bi-bag-plus" aria-hidden="true" />
                   <span>{t('product.addToCart')}</span>
-                </button>
-                <button
-                  type="button"
-                  className="product-btn product-btn-pay"
-                  onClick={handlePayVisa}
-                >
-                  <i className="bi bi-credit-card-2-front" aria-hidden="true" />
-                  <span>{t('product.btnPay')}</span>
                 </button>
                 <button
                   type="button"

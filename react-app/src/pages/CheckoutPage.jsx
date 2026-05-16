@@ -20,7 +20,7 @@ export function CheckoutPage() {
   const navigate = useNavigate();
   const { t, lang } = useLanguage();
   const { items, total, clearCart } = useCart();
-  const [form, setForm] = useState({ name: '', phone: '', address: '', notes: '', paymentMethod: 'cod' });
+  const [form, setForm] = useState({ name: '', phone: '', address: '', notes: '' });
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -52,7 +52,7 @@ export function CheckoutPage() {
         phone: form.phone.trim(),
         address: form.address.trim(),
         notes: form.notes.trim(),
-        paymentMethod: form.paymentMethod,
+        paymentMethod: 'cod',
         items: items.map((i) => ({
           productId: i.productId,
           name: i.name,
@@ -148,17 +148,9 @@ export function CheckoutPage() {
                 />
                 {errors.address && <span className="checkout-error" role="alert">{errors.address}</span>}
               </div>
-              <div className="checkout-field">
-                <label htmlFor="checkoutPaymentMethod" className="checkout-label">Payment Method</label>
-                <select
-                  id="checkoutPaymentMethod"
-                  className="checkout-input ui-input"
-                  value={form.paymentMethod}
-                  onChange={(e) => handleChange('paymentMethod', e.target.value)}
-                >
-                  <option value="cod">Cash on Delivery</option>
-                  <option value="bank_card">Visa / Mastercard</option>
-                </select>
+              <div className="checkout-field checkout-payment-notice" role="status">
+                <span className="checkout-label">{t('checkout.paymentMethod')}</span>
+                <p className="checkout-payment-cod">{t('checkout.paymentCodOnly')}</p>
               </div>
               <div className="checkout-field">
                 <label htmlFor="checkoutNotes" className="checkout-label checkout-label-optional">{t('checkout.notes')}</label>

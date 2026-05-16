@@ -1,5 +1,5 @@
 /**
- * Button — reusable button/link with variants (primary, outline, pay, cod).
+ * Button — reusable button/link with variants (primary, outline, cart, cod).
  * Used for CTAs, form submit, and product actions.
  */
 
@@ -15,7 +15,6 @@ export function Button({
   const variants = {
     primary: '',
     outline: 'cookie-consent-ignore',
-    pay: 'product-btn product-btn-pay',
     cod: 'product-btn product-btn-cod',
     cart: 'product-btn product-btn-cart',
   };

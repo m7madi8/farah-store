@@ -21,6 +21,9 @@ function localImageBySlug(slug) {
   if (!slug) return null;
   const cleanSlug = String(slug).trim();
   if (!cleanSlug) return null;
+  if (cleanSlug === 'date-balls-chocolate') {
+    return '/img/pro2.png';
+  }
   if (cleanSlug === 'dumplings-meat') {
     return '/img/products/dumplings-chicken/dumplings-chicken.webp';
   }
@@ -48,8 +51,8 @@ const MOCK_PRODUCTS = [
     descriptionAr: 'كرات تمر لذيذة مغطاة بالشوكولاته. حجمين متوفرين.',
     price: 25,
     category: 'boxes',
-    imageUrl: '/img/date-balls.webp',
-    heroImage: '/img/date-balls.webp',
+    imageUrl: '/img/pro2.png',
+    heroImage: '/img/pro2.png',
     order: 8,
     badge: 'Signature',
     details: [],
@@ -57,7 +60,7 @@ const MOCK_PRODUCTS = [
       { key: '7', labelEn: '7 pieces', labelAr: '٧ حبات', price: 25 },
       { key: '16', labelEn: '16 pieces', labelAr: '١٦ حبة', price: 45 },
     ],
-    images: ['/img/date-balls.webp'].concat([2, 3, 4, 5].map((n) => `/img/products/date-balls-chocolate/${n}.webp`)),
+    images: ['/img/pro2.png'],
   },
 ];
 
@@ -131,7 +134,8 @@ function normalizeProduct(p) {
   const backendImageUrl = normalizeImageUrl(imageUrlRaw);
   const slugImageUrl = localImageBySlug(p.slug);
   const finalImageUrl = slugImageUrl || backendImageUrl || DEFAULT_PRODUCT_IMAGE;
-  return {
+  const slugNorm = String(p.slug || '').trim();
+  const merged = {
     ...p,
     name: p.name ?? p.name_en,
     nameAr: p.nameAr ?? p.name_ar,
@@ -142,6 +146,10 @@ function normalizeProduct(p) {
     order: resolveDisplayOrder(p),
     category,
   };
+  if (slugNorm === 'date-balls-chocolate') {
+    merged.images = [finalImageUrl];
+  }
+  return merged;
 }
 
 /**
