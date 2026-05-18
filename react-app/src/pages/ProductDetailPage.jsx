@@ -117,7 +117,7 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
       <Navbar backToShop={false} alwaysShowBackground onCartClick={onCartOpen ? () => onCartOpen(true) : undefined} />
       <CartPanel isOpen={cartOpen} onClose={() => setCartOpen?.(false)} />
       <CartToast show={toastShow} onHide={() => setToastShow(false)} />
-      <main className={`product-main ${isDateBalls ? 'product-main-date-balls' : ''}`}>
+      <main className={`product-main ${isDateBalls ? 'product-main-date-balls' : ''}${isDumplingHeroBg ? ' product-main-dumplings' : ''}`}>
         <div
           className={`product-hero${isDateBalls ? ' product-hero-date-balls' : ''}${isDumplingHeroBg ? ' product-hero-dumplings' : ''}`}
           {...(isDumplingHeroBg ? { role: 'img', 'aria-label': name } : {})}
