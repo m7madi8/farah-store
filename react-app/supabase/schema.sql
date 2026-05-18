@@ -28,7 +28,7 @@ create table if not exists public.orders (
   notes text default '',
   payment_method text default 'cod',
   total numeric(12, 2) not null default 0,
-  status text not null default 'new',
+  status text not null default 'pending',
   created_at timestamptz default now()
 );
 
@@ -90,6 +90,12 @@ create policy "orders_delete_staff"
 drop policy if exists "order_items_select_staff" on public.order_items;
 create policy "order_items_select_staff"
   on public.order_items for select
+  to authenticated
+  using (true);
+
+drop policy if exists "order_items_delete_staff" on public.order_items;
+create policy "order_items_delete_staff"
+  on public.order_items for delete
   to authenticated
   using (true);
 

@@ -4,6 +4,7 @@ import { getSupabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { AdminStatusBadge } from './AdminStatusBadge';
 import { AdminConfirmDialog } from './AdminConfirmDialog';
+import { isApprovedOrder, isPendingOrder, normalizeOrderStatus } from './orderUtils';
 
 function formatWhen(iso, locale) {
   if (!iso) return '—';
@@ -15,6 +16,11 @@ function formatWhen(iso, locale) {
   } catch {
     return String(iso);
   }
+}
+
+function statusLabel(status, t) {
+  const key = normalizeOrderStatus(status);
+  return t(`admin.status.${key}`);
 }
 
 function OrderDetailRow({ label, value, href }) {
@@ -35,12 +41,23 @@ function OrderDetailRow({ label, value, href }) {
   );
 }
 
-function OrderCard({ order, expanded, onToggle, onDelete, deleting, t, lang }) {
+function OrderCard({
+  order,
+  expanded,
+  onToggle,
+  onDelete,
+  onApprove,
+  deleting,
+  approving,
+  t,
+  lang,
+}) {
   const items = order.order_items || [];
   const itemsSummary = items.map((it) => `${it.product_name || '—'} ×${it.quantity}`).join(' · ');
+  const pending = isPendingOrder(order);
 
   return (
-    <article className={`admin-order-card${expanded ? ' is-expanded' : ''}`}>
+    <article className={`admin-order-card${expanded ? ' is-expanded' : ''}${pending ? ' admin-order-card--pending' : ' admin-order-card--approved'}`}>
       <div className="admin-order-card-head">
         <div className="admin-order-card-meta">
           <h3 className="admin-order-name">{order.customer_name || '—'}</h3>
@@ -48,7 +65,7 @@ function OrderCard({ order, expanded, onToggle, onDelete, deleting, t, lang }) {
         </div>
         <div className="admin-order-card-side">
           <span className="admin-order-total">₪ {Number(order.total || 0).toFixed(2)}</span>
-          <AdminStatusBadge status={order.status} />
+          <AdminStatusBadge status={order.status} label={statusLabel(order.status, t)} />
         </div>
       </div>
 
@@ -60,7 +77,7 @@ function OrderCard({ order, expanded, onToggle, onDelete, deleting, t, lang }) {
           <OrderDetailRow label={t('admin.colAddress')} value={order.shipping_address} />
           <OrderDetailRow label={t('admin.colDate')} value={formatWhen(order.created_at, lang)} />
           <OrderDetailRow label={t('admin.colTotal')} value={`₪ ${Number(order.total || 0).toFixed(2)}`} />
-          <OrderDetailRow label={t('admin.colStatus')} value={order.status} />
+          <OrderDetailRow label={t('admin.colStatus')} value={statusLabel(order.status, t)} />
           {order.notes ? <OrderDetailRow label={t('admin.colNotes')} value={order.notes} /> : null}
           <OrderDetailRow label={t('admin.paymentMethod')} value={order.payment_method === 'cod' ? t('admin.paymentCod') : order.payment_method} />
           {items.length > 0 ? (
@@ -87,6 +104,11 @@ function OrderCard({ order, expanded, onToggle, onDelete, deleting, t, lang }) {
         <Button type="button" variant="outline" size="sm" className="flex-1" onClick={onToggle}>
           {expanded ? t('admin.hideOrder') : t('admin.viewOrder')}
         </Button>
+        {pending && onApprove ? (
+          <Button type="button" size="sm" className="flex-1" disabled={approving} onClick={onApprove}>
+            {approving ? t('admin.approving') : t('admin.approveOrder')}
+          </Button>
+        ) : null}
         <Button
           type="button"
           variant="destructive"
@@ -102,6 +124,31 @@ function OrderCard({ order, expanded, onToggle, onDelete, deleting, t, lang }) {
   );
 }
 
+function OrderList({ orders, emptyText, expandedId, setExpandedId, deletingId, approvingId, onDelete, onApprove, t, lang }) {
+  if (!orders.length) {
+    return <p className="admin-section-empty">{emptyText}</p>;
+  }
+  return (
+    <ul className="admin-order-list">
+      {orders.map((order) => (
+        <li key={order.id}>
+          <OrderCard
+            order={order}
+            expanded={expandedId === order.id}
+            onToggle={() => setExpandedId((id) => (id === order.id ? null : order.id))}
+            onDelete={() => onDelete(order)}
+            onApprove={isPendingOrder(order) ? () => onApprove(order) : undefined}
+            deleting={deletingId === order.id}
+            approving={approvingId === order.id}
+            t={t}
+            lang={lang}
+          />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function AdminOrdersPage() {
   const { t, lang } = useLanguage();
   const [data, setData] = useState([]);
@@ -109,6 +156,7 @@ export function AdminOrdersPage() {
   const [error, setError] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [approvingId, setApprovingId] = useState(null);
   const [orderToDelete, setOrderToDelete] = useState(null);
 
   const loadOrders = useCallback(async () => {
@@ -133,12 +181,15 @@ export function AdminOrdersPage() {
     loadOrders();
   }, [loadOrders]);
 
+  const pendingOrders = useMemo(() => data.filter(isPendingOrder), [data]);
+  const approvedOrders = useMemo(() => data.filter(isApprovedOrder), [data]);
+
   const stats = useMemo(() => {
-    const totalOrders = data.length;
-    const newOrders = data.filter((o) => String(o.status || 'new').toLowerCase() === 'new').length;
-    const revenue = data.reduce((sum, o) => sum + Number(o.total || 0), 0);
-    return { totalOrders, newOrders, revenue };
-  }, [data]);
+    const pendingCount = pendingOrders.length;
+    const approvedCount = approvedOrders.length;
+    const approvedRevenue = approvedOrders.reduce((sum, o) => sum + Number(o.total || 0), 0);
+    return { pendingCount, approvedCount, approvedRevenue };
+  }, [pendingOrders, approvedOrders]);
 
   async function confirmDelete() {
     if (!orderToDelete) return;
@@ -146,8 +197,15 @@ export function AdminOrdersPage() {
     setDeletingId(orderId);
     setError(null);
     try {
-      const { error: delErr } = await getSupabase().from('orders').delete().eq('id', orderId);
+      const { data: deleted, error: delErr } = await getSupabase()
+        .from('orders')
+        .delete()
+        .eq('id', orderId)
+        .select('id');
       if (delErr) throw delErr;
+      if (!deleted?.length) {
+        throw new Error(t('admin.deleteFailed'));
+      }
       setData((prev) => prev.filter((o) => o.id !== orderId));
       if (expandedId === orderId) setExpandedId(null);
       setOrderToDelete(null);
@@ -155,6 +213,27 @@ export function AdminOrdersPage() {
       setError(e);
     } finally {
       setDeletingId(null);
+    }
+  }
+
+  async function handleApprove(order) {
+    setApprovingId(order.id);
+    setError(null);
+    try {
+      const { data: updated, error: upErr } = await getSupabase()
+        .from('orders')
+        .update({ status: 'approved' })
+        .eq('id', order.id)
+        .select('*, order_items(*)')
+        .single();
+      if (upErr) throw upErr;
+      if (!updated) throw new Error(t('admin.approveFailed'));
+      setData((prev) => prev.map((o) => (o.id === order.id ? updated : o)));
+      setExpandedId(null);
+    } catch (e) {
+      setError(e);
+    } finally {
+      setApprovingId(null);
     }
   }
 
@@ -167,51 +246,71 @@ export function AdminOrdersPage() {
 
       <div className="admin-stats admin-stats--compact">
         <div className="admin-stat-card">
-          <div className="admin-stat-label">{t('admin.statTotalOrders')}</div>
-          <div className="admin-stat-value">{stats.totalOrders}</div>
+          <div className="admin-stat-label">{t('admin.statPending')}</div>
+          <div className="admin-stat-value">{stats.pendingCount}</div>
         </div>
         <div className="admin-stat-card">
-          <div className="admin-stat-label">{t('admin.statNewOrders')}</div>
-          <div className="admin-stat-value">{stats.newOrders}</div>
+          <div className="admin-stat-label">{t('admin.statApproved')}</div>
+          <div className="admin-stat-value">{stats.approvedCount}</div>
         </div>
-        <div className="admin-stat-card">
-          <div className="admin-stat-label">{t('admin.statRevenue')}</div>
-          <div className="admin-stat-value">₪ {stats.revenue.toFixed(2)}</div>
+        <div className="admin-stat-card admin-stat-card--highlight">
+          <div className="admin-stat-label">{t('admin.statApprovedRevenue')}</div>
+          <div className="admin-stat-value">₪ {stats.approvedRevenue.toFixed(2)}</div>
         </div>
       </div>
 
-      <section className="admin-panel admin-panel--flush">
-        <div className="admin-panel-body admin-panel-body--padded">
-          {isLoading ? <div className="admin-loading">{t('admin.loading')}</div> : null}
-          {error ? <p className="admin-error">{error.message}</p> : null}
-          {!isLoading && !error && data.length === 0 ? (
-            <div className="admin-empty">
-              <svg className="admin-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
-                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
-                <line x1="3" y1="6" x2="21" y2="6" />
-              </svg>
-              <p>{t('admin.emptyOrders')}</p>
+      {isLoading ? <div className="admin-loading">{t('admin.loading')}</div> : null}
+      {error ? <p className="admin-error">{error.message}</p> : null}
+
+      {!isLoading ? (
+        <>
+          <section className="admin-section">
+            <header className="admin-section-head">
+              <h3>{t('admin.sectionPending')}</h3>
+              <p>{t('admin.sectionPendingSub')}</p>
+            </header>
+            <div className="admin-panel admin-panel--flush">
+              <div className="admin-panel-body admin-panel-body--padded">
+                <OrderList
+                  orders={pendingOrders}
+                  emptyText={t('admin.emptyPending')}
+                  expandedId={expandedId}
+                  setExpandedId={setExpandedId}
+                  deletingId={deletingId}
+                  approvingId={approvingId}
+                  onDelete={setOrderToDelete}
+                  onApprove={handleApprove}
+                  t={t}
+                  lang={lang}
+                />
+              </div>
             </div>
-          ) : null}
-          {!isLoading && !error && data.length > 0 ? (
-            <ul className="admin-order-list">
-              {data.map((order) => (
-                <li key={order.id}>
-                  <OrderCard
-                    order={order}
-                    expanded={expandedId === order.id}
-                    onToggle={() => setExpandedId((id) => (id === order.id ? null : order.id))}
-                    onDelete={() => setOrderToDelete(order)}
-                    deleting={deletingId === order.id}
-                    t={t}
-                    lang={lang}
-                  />
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
-      </section>
+          </section>
+
+          <section className="admin-section admin-section--approved">
+            <header className="admin-section-head">
+              <h3>{t('admin.sectionApproved')}</h3>
+              <p>{t('admin.sectionApprovedSub')}</p>
+            </header>
+            <div className="admin-panel admin-panel--flush admin-panel--approved">
+              <div className="admin-panel-body admin-panel-body--padded">
+                <OrderList
+                  orders={approvedOrders}
+                  emptyText={t('admin.emptyApproved')}
+                  expandedId={expandedId}
+                  setExpandedId={setExpandedId}
+                  deletingId={deletingId}
+                  approvingId={approvingId}
+                  onDelete={setOrderToDelete}
+                  onApprove={handleApprove}
+                  t={t}
+                  lang={lang}
+                />
+              </div>
+            </div>
+          </section>
+        </>
+      ) : null}
 
       <AdminConfirmDialog
         open={!!orderToDelete}

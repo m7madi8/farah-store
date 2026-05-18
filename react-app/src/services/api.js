@@ -213,7 +213,7 @@ async function submitOrderSupabase(orderPayload) {
     notes: orderPayload.notes || '',
     payment_method: orderPayload.paymentMethod || 'cod',
     total: orderPayload.total ?? 0,
-    status: 'new',
+    status: 'pending',
   });
 
   if (orderErr) throw orderErr;

@@ -30,3 +30,11 @@ create policy "orders_delete_staff"
   using (true);
 
 grant delete on public.orders to authenticated;
+
+drop policy if exists "order_items_delete_staff" on public.order_items;
+create policy "order_items_delete_staff"
+  on public.order_items for delete
+  to authenticated
+  using (true);
+
+grant delete on public.order_items to authenticated;

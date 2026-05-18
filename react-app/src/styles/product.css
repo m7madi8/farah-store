@@ -588,10 +588,49 @@
   }
 }
 
+/* Date balls — tablet / medium: hero height follows image (no empty band below photo) */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .product-hero.product-hero-date-balls {
+    aspect-ratio: unset;
+    max-height: none;
+    min-height: unset;
+    overflow: hidden;
+  }
+
+  .product-hero.product-hero-date-balls .product-hero-image {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 0;
+    padding-bottom: 0;
+    transform: translateY(calc(-1 * clamp(0.5rem, 2vw, 1.75rem)));
+  }
+
+  .product-hero.product-hero-date-balls .product-hero-image img {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    max-height: none;
+    object-fit: contain;
+    object-position: center top;
+    transform: none;
+    display: block;
+  }
+
+  .product-hero.product-hero-date-balls .product-hero-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+}
+
 @media (min-width: 1024px) {
   /* Large screens: full photo visible within the viewport (no zoom crop).
      Placed last so these rules win over base hero/img styles. */
-  .product-hero:not(.product-hero-dumplings) {
+  .product-hero:not(.product-hero-dumplings):not(.product-hero-date-balls) {
     aspect-ratio: unset;
     max-height: calc(100vh - 4.5rem);
     min-height: 260px;
@@ -599,8 +638,10 @@
   }
 
   .product-hero.product-hero-date-balls {
-    max-height: calc(100vh - 4.5rem);
     aspect-ratio: unset;
+    max-height: none;
+    min-height: unset;
+    overflow: hidden;
   }
 
   .product-hero:not(.product-hero-dumplings) .product-hero-image {
@@ -624,18 +665,32 @@
   }
 
   .product-hero.product-hero-date-balls .product-hero-image {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    display: flex;
     align-items: flex-start;
-    transform: translateY(calc(-1 * clamp(0.35rem, 2vw, 1.35rem)));
+    justify-content: center;
+    padding-top: 0;
+    padding-bottom: 0;
+    transform: translateY(calc(-1 * clamp(0.35rem, 1.5vw, 1.25rem)));
   }
 
   .product-hero.product-hero-date-balls .product-hero-image img {
-    width: auto;
+    width: 100%;
     height: auto;
-    max-width: min(100vw - 2rem, 100%);
-    max-height: calc(100vh - 5.25rem);
+    max-width: 100%;
+    max-height: none;
     object-fit: contain;
     object-position: center top;
-    transform: scale(1);
+    transform: none;
+    display: block;
+  }
+
+  .product-hero.product-hero-date-balls .product-hero-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
   }
 
   .product-hero:not(.product-hero-dumplings):not(.product-hero-date-balls) .product-hero-image.product-hero-anim img {

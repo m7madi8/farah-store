@@ -279,11 +279,13 @@
   text-transform: capitalize;
 }
 
+.admin-status--pending,
 .admin-status--new {
   background: #fef3c7;
   color: #92400e;
 }
 
+.admin-status--approved,
 .admin-status--done {
   background: #d1fae5;
   color: #065f46;
@@ -524,6 +526,56 @@
 .admin-order-actions .flex-1 {
   flex: 1;
   min-width: 0;
+}
+
+.admin-order-card--pending {
+  border-inline-start: 3px solid #f59e0b;
+}
+
+.admin-order-card--approved {
+  border-inline-start: 3px solid #10b981;
+}
+
+.admin-section {
+  margin-bottom: 1.5rem;
+}
+
+.admin-section-head {
+  margin-bottom: 0.75rem;
+}
+
+.admin-section-head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+.admin-section-head p {
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.admin-section-empty {
+  margin: 0;
+  padding: 1.5rem 0;
+  text-align: center;
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.admin-panel--approved {
+  border-color: hsl(152 40% 75% / 0.6);
+}
+
+.admin-stat-card--highlight .admin-stat-value {
+  color: hsl(152 45% 32%);
+}
+
+[dir="rtl"] .admin-section-head h3 {
+  font-family: var(--font-ar);
 }
 
 /* Confirm dialog */
