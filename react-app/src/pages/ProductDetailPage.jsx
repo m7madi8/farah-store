@@ -103,12 +103,18 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
       ...product,
       name: displayName,
       price: displayPrice,
+      variantKey: selectedVariant?.key ?? null,
     });
     setToastShow(true);
   };
 
   const handleCashOnDelivery = () => {
-    addItem({ ...product, name: displayName, price: displayPrice });
+    addItem({
+      ...product,
+      name: displayName,
+      price: displayPrice,
+      variantKey: selectedVariant?.key ?? null,
+    });
     navigate('/checkout');
   };
 

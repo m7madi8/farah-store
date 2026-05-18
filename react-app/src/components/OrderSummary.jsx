@@ -4,6 +4,7 @@
  */
 
 import { useLanguage } from '../context/LanguageContext';
+import { resolveCartLineKey } from '../lib/cartLineKey';
 
 export function OrderSummary({ items, total }) {
   const { t } = useLanguage();
@@ -17,7 +18,7 @@ export function OrderSummary({ items, total }) {
         {items.map((item, i) => {
           const qty = item.quantity || 1;
           return (
-          <li key={`${item.productId}-${i}`} className="checkout-summary-item">
+          <li key={resolveCartLineKey(item)} className="checkout-summary-item">
             <span className="checkout-summary-name">{item.name}</span>
             <span className="checkout-summary-qty" aria-label={t('cart.qty')}>× {qty}</span>
             <span className="checkout-summary-price">

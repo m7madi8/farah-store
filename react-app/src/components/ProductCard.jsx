@@ -53,7 +53,12 @@ export function ProductCard({ product, onShowToast }) {
     e.preventDefault();
     e.stopPropagation();
     if (!canAddToCart) return;
-    addItem({ ...product, name: displayNameForCart, price: priceForCart });
+    addItem({
+      ...product,
+      name: displayNameForCart,
+      price: priceForCart,
+      variantKey: selectedVariant?.key ?? null,
+    });
     onShowToast?.();
   };
 

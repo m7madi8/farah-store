@@ -6,6 +6,7 @@
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
+import { resolveCartLineKey } from '../lib/cartLineKey';
 
 export function CartPanel({ isOpen, onClose }) {
   const { t } = useLanguage();
@@ -35,7 +36,7 @@ export function CartPanel({ isOpen, onClose }) {
           {items.map((item, i) => {
             const qty = item.quantity || 1;
             return (
-            <div key={`${item.productId}-${i}`} className="cart-item" data-index={i}>
+            <div key={resolveCartLineKey(item)} className="cart-item" data-index={i}>
               <span className="cart-item-name">{item.name}</span>
               <span className="cart-item-qty" aria-label={t('cart.qty')}>× {qty}</span>
               <span className="cart-item-price">

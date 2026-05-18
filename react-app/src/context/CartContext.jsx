@@ -4,6 +4,7 @@
  */
 
 import { createContext, useContext, useReducer, useCallback } from 'react';
+import { getCartLineKey, resolveCartLineKey } from '@/lib/cartLineKey';
 
 const CartContext = createContext(null);
 
@@ -28,14 +29,26 @@ function cartReducer(state, action) {
   let next;
   switch (action.type) {
     case 'ADD': {
-      const { productId, name, price, quantity = 1, productSlug } = action.payload;
-      const existing = state.find((i) => i.productId === productId);
+      const { productId, name, price, quantity = 1, productSlug, variantKey, lineKey } = action.payload;
+      const key = lineKey ?? getCartLineKey(productId, variantKey);
+      const existing = state.find((i) => resolveCartLineKey(i) === key);
       if (existing) {
         next = state.map((i) =>
-          i.productId === productId ? { ...i, quantity: i.quantity + quantity } : i
+          resolveCartLineKey(i) === key ? { ...i, quantity: i.quantity + quantity } : i
         );
       } else {
-        next = [...state, { productId, name, price, quantity, ...(productSlug ? { productSlug } : {}) }];
+        next = [
+          ...state,
+          {
+            productId,
+            name,
+            price,
+            quantity,
+            lineKey: key,
+            ...(variantKey ? { variantKey } : {}),
+            ...(productSlug ? { productSlug } : {}),
+          },
+        ];
       }
       break;
     }
@@ -73,14 +86,18 @@ export function CartProvider({ children }) {
   });
 
   const addItem = useCallback((product) => {
+    const variantKey = product.variantKey ?? null;
+    const productId = product.id;
     dispatch({
       type: 'ADD',
       payload: {
-        productId: product.id,
+        productId,
         productSlug: product.slug,
         name: product.name,
         price: product.price,
         quantity: 1,
+        variantKey,
+        lineKey: getCartLineKey(productId, variantKey),
       },
     });
   }, []);
