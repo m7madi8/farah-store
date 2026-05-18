@@ -13,7 +13,9 @@ import { CheckoutPage } from './pages/CheckoutPage';
 import { RequireAdmin } from './pages/admin/RequireAdmin';
 import { AdminLayout } from './pages/admin/AdminLayout';
 import { AdminLoginPage } from './pages/admin/AdminLoginPage';
-import { AdminOrdersPage } from './pages/admin/AdminOrdersPage';
+import { AdminPendingPage } from './pages/admin/AdminPendingPage';
+import { AdminApprovedPage } from './pages/admin/AdminApprovedPage';
+import { AdminStatsPage } from './pages/admin/AdminStatsPage';
 import { AdminProductsPage } from './pages/admin/AdminProductsPage';
 
 function AppRoutes() {
@@ -45,8 +47,11 @@ function AppRoutes() {
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin" element={<RequireAdmin />}>
           <Route element={<AdminLayout />}>
-            <Route index element={<Navigate to="orders" replace />} />
-            <Route path="orders" element={<AdminOrdersPage />} />
+            <Route index element={<Navigate to="pending" replace />} />
+            <Route path="orders" element={<Navigate to="/admin/pending" replace />} />
+            <Route path="pending" element={<AdminPendingPage />} />
+            <Route path="approved" element={<AdminApprovedPage />} />
+            <Route path="stats" element={<AdminStatsPage />} />
             <Route path="products" element={<AdminProductsPage />} />
           </Route>
         </Route>
@@ -57,7 +62,12 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <LanguageProvider>
         <CartProvider>
           <AppRoutes />

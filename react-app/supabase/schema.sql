@@ -105,3 +105,31 @@ create policy "products_staff_write"
   to authenticated
   using (true)
   with check (true);
+
+-- Table privileges (RLS alone is not enough without GRANT)
+grant usage on schema public to anon, authenticated;
+grant select on public.products to anon, authenticated;
+grant insert on public.orders to anon, authenticated;
+grant insert on public.order_items to anon, authenticated;
+grant select, update, delete on public.orders to authenticated;
+grant select, delete on public.order_items to authenticated;
+grant all on public.products to authenticated;
+
+create or replace function public.staff_delete_order(p_order_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  n int;
+begin
+  delete from public.order_items where order_id = p_order_id;
+  delete from public.orders where id = p_order_id;
+  get diagnostics n = row_count;
+  return coalesce(n, 0) > 0;
+end;
+$$;
+
+revoke all on function public.staff_delete_order(uuid) from public;
+grant execute on function public.staff_delete_order(uuid) to authenticated;

@@ -22,6 +22,8 @@ export function getSupabase() {
       {
         auth: {
           persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
           storageKey: 'cfa-supabase-auth',
         },
       }

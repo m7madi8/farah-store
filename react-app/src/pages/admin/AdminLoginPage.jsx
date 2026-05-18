@@ -19,7 +19,7 @@ export function AdminLoginPage() {
     getSupabase()
       .auth.getSession()
       .then(({ data }) => {
-        if (data.session) navigate('/admin/orders', { replace: true });
+        if (data.session) navigate('/admin/pending', { replace: true });
       });
     return undefined;
   }, [navigate]);
@@ -41,7 +41,7 @@ export function AdminLoginPage() {
         setError(signErr.message);
         return;
       }
-      navigate('/admin/orders', { replace: true });
+      navigate('/admin/pending', { replace: true });
     } finally {
       setLoading(false);
     }
