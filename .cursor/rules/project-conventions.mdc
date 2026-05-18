@@ -1,14 +1,16 @@
 ---
-description: Core project conventions — stack, i18n, CORS, and structure
+description: Core project conventions — storefront, i18n, and structure
 alwaysApply: true
 ---
 
 # Project Conventions — Nana's Bites / Chef Farah Ammar
 
 ## Stack
-- **Backend**: Django (config/, apps.accounts, apps.products, apps.orders). REST API under `/api/`. Use `.env` for secrets; never commit `.env`.
-- **Frontend**: React (Vite) in `react-app/`. Routes: Home (`/`), Product detail (`/product/:slug`), Checkout (`/checkout`).
-- **API base**: Frontend uses `VITE_API_BASE` (e.g. `http://127.0.0.1:8000/api`). Backend CORS must allow the frontend origin via `CORS_ORIGINS` in backend `.env` (e.g. `http://localhost:3001,http://127.0.0.1:3001`).
+- **Frontend**: React (Vite) in `react-app/`. Routes: Home (`/`), Product detail (`/product/:slug`), Checkout (`/checkout`), **Admin** (`/admin` — Supabase Auth + tables).
+- **Data**:
+  - **Supabase** (optional): `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`. Apply `react-app/supabase/schema.sql` and optional `seed.sql` in the Supabase SQL editor. Storefront loads `products`; checkout writes `orders` / `order_items`; staff uses `/admin/login`.
+  - **REST** (optional): `VITE_API_BASE` for a custom API.
+  - **Mock**: if neither Supabase nor REST is set, built-in demo catalog + local checkout success.
 
 ## i18n
 - UI is bilingual: **Arabic (ar)** and **English (en)**. Use `useLanguage()` and `t(key)` from `LanguageContext` and `translations.js`. Add new keys in both languages in `react-app/src/data/translations.js`.
@@ -19,5 +21,8 @@ alwaysApply: true
 - **Brand**: Purple palette (`--deep-purple`, `--lavender`, `--soft-pink`, `--off-white`). Product cards: rounded, soft shadow, consistent aspect-ratio for images.
 
 ## Key paths
-- Products API: `GET /api/products/`. Orders: `POST /api/orders/` (apps.orders). Products app: `apps/products/` (models, serializers, views).
+- API: `react-app/src/services/api.js` (`fetchProducts`, `fetchProductBySlug`, `submitOrder`).
+- Supabase client: `react-app/src/lib/supabase.js`
+- Admin: `react-app/src/pages/admin/` — UI primitives `react-app/src/components/ui/`
+- SQL: `react-app/supabase/schema.sql`, `react-app/supabase/seed.sql`
 - Shop sections in `HomePage.jsx`: boxes, dateBalls (slug `date-balls-chocolate`), sauces, chopsticks. Category meta and section class names: `shop-category-boxes`, `shop-category-sauces`, etc.

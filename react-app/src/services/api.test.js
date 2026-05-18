@@ -8,6 +8,9 @@ import { fetchProducts, fetchProductBySlug, submitOrder } from './api';
 describe('api', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_SUPABASE_URL', '');
+    vi.stubEnv('VITE_SUPABASE_ANON_KEY', '');
   });
 
   describe('fetchProducts', () => {
@@ -22,9 +25,16 @@ describe('api', () => {
     });
 
     it('returns array from API when fetch is mocked', async () => {
+      vi.stubEnv('VITE_API_BASE', 'http://test.local/api');
       const mockData = [{ id: 1, slug: 'test', name: 'Test', price: 10 }];
       global.fetch = vi.fn(() =>
-        Promise.resolve({ ok: true, json: () => Promise.resolve({ results: mockData }) })
+        Promise.resolve({
+          ok: true,
+          headers: {
+            get: (name) => (String(name).toLowerCase() === 'content-type' ? 'application/json' : null),
+          },
+          json: () => Promise.resolve({ results: mockData }),
+        })
       );
       const products = await fetchProducts();
       expect(Array.isArray(products)).toBe(true);
@@ -50,8 +60,15 @@ describe('api', () => {
     });
 
     it('submitOrder with BASE set uses POST and JSON body', async () => {
+      vi.stubEnv('VITE_API_BASE', 'http://test.local/api');
       global.fetch = vi.fn(() =>
-        Promise.resolve({ ok: true, json: () => Promise.resolve({ id: 123 }) })
+        Promise.resolve({
+          ok: true,
+          headers: {
+            get: (name) => (String(name).toLowerCase() === 'content-type' ? 'application/json' : null),
+          },
+          json: () => Promise.resolve({ id: 123 }),
+        })
       );
       await submitOrder({
         name: 'Test',

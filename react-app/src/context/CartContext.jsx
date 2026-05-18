@@ -28,14 +28,14 @@ function cartReducer(state, action) {
   let next;
   switch (action.type) {
     case 'ADD': {
-      const { productId, name, price, quantity = 1 } = action.payload;
+      const { productId, name, price, quantity = 1, productSlug } = action.payload;
       const existing = state.find((i) => i.productId === productId);
       if (existing) {
         next = state.map((i) =>
           i.productId === productId ? { ...i, quantity: i.quantity + quantity } : i
         );
       } else {
-        next = [...state, { productId, name, price, quantity }];
+        next = [...state, { productId, name, price, quantity, ...(productSlug ? { productSlug } : {}) }];
       }
       break;
     }
@@ -77,6 +77,7 @@ export function CartProvider({ children }) {
       type: 'ADD',
       payload: {
         productId: product.id,
+        productSlug: product.slug,
         name: product.name,
         price: product.price,
         quantity: 1,

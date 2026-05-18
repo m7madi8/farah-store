@@ -1,10 +1,27 @@
 /**
  * API service for Chef Farah Ammar store.
- * All product, cart, and order data should come from REST endpoints.
- * Set VITE_API_BASE in .env (e.g. https://api.example.com) or leave empty for mock.
+ *
+ * Data source priority:
+ * 1. Supabase — when VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY are set (see supabase/schema.sql).
+ * 2. REST — when VITE_API_BASE is set (legacy Django-style API).
+ * 3. Mock — built-in demo catalog + local checkout success.
  */
 
-const BASE = (import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000/api').replace(/\/$/, '');
+import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isValidUuid(value) {
+  return value != null && UUID_RE.test(String(value));
+}
+
+function apiBase() {
+  const raw = import.meta.env.VITE_API_BASE;
+  return raw != null && String(raw).trim() !== ''
+    ? String(raw).replace(/\/$/, '')
+    : '';
+}
+
 const DEFAULT_PRODUCT_IMAGE = '/img/2.webp';
 const FEATURED_ORDER_BY_SLUG = {
   'dumplings-chicken': 1,
@@ -31,8 +48,7 @@ function localImageBySlug(slug) {
 }
 
 /**
- * Fallback product list when API is not configured (for development / static deploy).
- * Backend should expose GET /products returning array of { id, slug, name, nameAr, description, descriptionAr, price, category, imageUrl, order, details[] }.
+ * Fallback product list when no remote source is available.
  */
 const MOCK_PRODUCTS = [
   { id: '1', slug: 'dumplings-chicken', name: 'Dumplings – Chicken', nameAr: 'دامبلنغ – دجاج', description: 'Handcrafted chicken dumplings with rich flavors. Created by Chef Farah.', descriptionAr: 'دامبلنغ دجاج مصنوع يدوياً بنكهات غنية. من إبداع الشيف فرح.', price: 25, category: 'boxes', imageUrl: '/img/1.webp', heroImage: '/img/2.webp', order: 1, badge: 'Signature', details: ['detail1', 'detail2', 'detail3', 'detail4', 'detail5', 'detailTeriyaki', 'detailSweetChili', 'detail6'] },
@@ -65,7 +81,11 @@ const MOCK_PRODUCTS = [
 ];
 
 async function request(path, options = {}) {
-  const url = `${BASE}${path}`;
+  const base = apiBase();
+  if (!base) {
+    throw new Error('API not configured');
+  }
+  const url = `${base}${path}`;
   const res = await fetch(url, {
     headers: { 'Content-Type': 'application/json', ...options.headers },
     ...options,
@@ -152,24 +172,106 @@ function normalizeProduct(p) {
   return merged;
 }
 
-/**
- * Fetch all products. Uses mock when VITE_API_BASE not set, or when API fails/returns empty.
- * Each product gets .category = 'boxes' | 'sauces' | 'chopsticks' for filtering.
- */
-export async function fetchProducts() {
-  try {
-    const data = await request('/products/');
-    const raw = Array.isArray(data) ? data : (data?.results ?? data?.products ?? []);
-    const list = Array.isArray(raw) ? raw : [];
-    return list.map(normalizeProduct);
-  } catch (_) {
-    // Fall back to mock products for development
-    return MOCK_PRODUCTS;
+function mapSupabaseProductRow(row) {
+  return normalizeProduct({
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    name_ar: row.name_ar,
+    description: row.description,
+    description_ar: row.description_ar,
+    price: Number(row.price),
+    category: row.category,
+    imageUrl: row.image_url,
+    hero_image: row.hero_image,
+    sort_order: row.sort_order,
+    badge: row.badge,
+    details: row.details,
+    variants: row.variants,
+    images: row.images,
+  });
+}
+
+async function fetchProductsFromSupabase() {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .order('sort_order', { ascending: true });
+  if (error) throw error;
+  return (data || []).map(mapSupabaseProductRow);
+}
+
+async function submitOrderSupabase(orderPayload) {
+  const supabase = getSupabase();
+  const orderId = crypto.randomUUID();
+  const { error: orderErr } = await supabase.from('orders').insert({
+    id: orderId,
+    customer_name: orderPayload.name,
+    customer_phone: orderPayload.phone,
+    shipping_address: orderPayload.address,
+    notes: orderPayload.notes || '',
+    payment_method: orderPayload.paymentMethod || 'cod',
+    total: orderPayload.total ?? 0,
+    status: 'new',
+  });
+
+  if (orderErr) throw orderErr;
+
+  const lines = (orderPayload.items || []).map((item) => ({
+    order_id: orderId,
+    product_id: isValidUuid(item.productId) ? item.productId : null,
+    product_slug: item.productSlug || null,
+    quantity: item.quantity || 1,
+    unit_price: item.price ?? 0,
+    product_name: item.name ?? '',
+  }));
+
+  if (lines.length > 0) {
+    const { error: itemsErr } = await supabase.from('order_items').insert(lines);
+    if (itemsErr) throw itemsErr;
   }
+
+  return {
+    ok: true,
+    orderId,
+    message: 'Order saved.',
+  };
+}
+
+function mockProductsList() {
+  return MOCK_PRODUCTS.map(normalizeProduct);
 }
 
 /**
- * Fetch single product by slug. Used for product detail page.
+ * Fetch all products.
+ */
+export async function fetchProducts() {
+  if (isSupabaseConfigured()) {
+    try {
+      const list = await fetchProductsFromSupabase();
+      if (Array.isArray(list) && list.length > 0) return list;
+    } catch (err) {
+      console.warn('[fetchProducts] Supabase:', err);
+    }
+  }
+
+  if (apiBase()) {
+    try {
+      const data = await request('/products/');
+      const raw = Array.isArray(data) ? data : (data?.results ?? data?.products ?? []);
+      const list = Array.isArray(raw) ? raw : [];
+      return list.map(normalizeProduct);
+    } catch (_) {
+      return mockProductsList();
+    }
+  }
+
+  return mockProductsList();
+}
+
+/**
+ * Fetch single product by slug.
  */
 export async function fetchProductBySlug(slug) {
   const products = await fetchProducts();
@@ -177,10 +279,21 @@ export async function fetchProductBySlug(slug) {
 }
 
 /**
- * Submit order to backend. POST /orders with body { name, phone, address, notes, items: [{ productId, quantity, price, name }], total }.
- * When API is not set, returns a local success object so checkout still works (e.g. for demo).
+ * Submit checkout order.
  */
 export async function submitOrder(orderPayload) {
+  if (isSupabaseConfigured()) {
+    return submitOrderSupabase(orderPayload);
+  }
+
+  if (!apiBase()) {
+    return {
+      ok: true,
+      orderId: `local-${Date.now()}`,
+      message: 'Order recorded locally (no API configured).',
+    };
+  }
+
   const backendPayload = {
     customer_name: orderPayload.name,
     customer_phone: orderPayload.phone,
@@ -197,3 +310,6 @@ export async function submitOrder(orderPayload) {
     body: JSON.stringify(backendPayload),
   });
 }
+
+/** Re-export Supabase flag for admin UI (avoid importing lib/supabase everywhere). */
+export { isSupabaseConfigured };

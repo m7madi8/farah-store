@@ -55,6 +55,7 @@ export function CheckoutPage() {
         paymentMethod: 'cod',
         items: items.map((i) => ({
           productId: i.productId,
+          productSlug: i.productSlug,
           name: i.name,
           price: i.price,
           quantity: i.quantity || 1,
