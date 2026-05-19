@@ -13,7 +13,7 @@ insert into public.products (
   'دامبلنغ دجاج مصنوع يدوياً.',
   25, 'boxes',
   '/img/1.webp', '/img/2.webp', 1, 'Signature',
-  '["detail1","detail2","detail3"]'::jsonb,
+  '["detail1","detail2","detail3","detail4","detail5","detailTeriyaki","detailSweetChili","detail6"]'::jsonb,
   null,
   '[]'::jsonb
 ),
@@ -26,7 +26,7 @@ insert into public.products (
   'دامبلنغ لحم.',
   27, 'boxes',
   '/img/1.webp', '/img/2.webp', 2, 'Signature',
-  '[]'::jsonb,
+  '["detail1","detail2Meat","detail3","detail4","detail5","detailTeriyaki","detailSweetChili","detail6"]'::jsonb,
   null,
   '[]'::jsonb
 ),
@@ -109,3 +109,12 @@ insert into public.products (
   '["/img/pro2.png"]'::jsonb
 )
 on conflict (slug) do nothing;
+
+-- Sync dumpling ingredient lists for existing databases (seed insert skips on conflict)
+update public.products
+set details = '["detail1","detail2","detail3","detail4","detail5","detailTeriyaki","detailSweetChili","detail6"]'::jsonb
+where slug = 'dumplings-chicken';
+
+update public.products
+set details = '["detail1","detail2Meat","detail3","detail4","detail5","detailTeriyaki","detailSweetChili","detail6"]'::jsonb
+where slug = 'dumplings-meat';

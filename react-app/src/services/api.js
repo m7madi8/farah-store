@@ -147,6 +147,21 @@ function resolveDisplayOrder(p) {
   return FEATURED_ORDER_BY_SLUG[slug] ?? 1000;
 }
 
+function mockDetailsForSlug(slug) {
+  const mock = MOCK_PRODUCTS.find((p) => p.slug === slug);
+  return mock?.details?.length ? mock.details : null;
+}
+
+/** Use catalog defaults when Supabase has empty or outdated ingredient lists. */
+function resolveProductDetails(slug, details) {
+  const list = Array.isArray(details) ? details : [];
+  const defaults = mockDetailsForSlug(slug);
+  if (!defaults?.length) return list;
+  if (!list.length) return defaults;
+  if (list.length < defaults.length) return defaults;
+  return list;
+}
+
 function normalizeProduct(p) {
   const category = inferCategoryFromProduct(p);
   const heroImg = p.hero_image ?? p.images?.find((i) => i.is_hero) ?? p.images?.[0];
@@ -154,7 +169,7 @@ function normalizeProduct(p) {
   const backendImageUrl = normalizeImageUrl(imageUrlRaw);
   const slugImageUrl = localImageBySlug(p.slug);
   const finalImageUrl = slugImageUrl || backendImageUrl || DEFAULT_PRODUCT_IMAGE;
-  const slugNorm = String(p.slug || '').trim();
+  const slugNorm = String(p.slug || '').trim().toLowerCase();
   const merged = {
     ...p,
     name: p.name ?? p.name_en,
@@ -165,6 +180,7 @@ function normalizeProduct(p) {
     heroImage: finalImageUrl,
     order: resolveDisplayOrder(p),
     category,
+    details: resolveProductDetails(slugNorm, p.details),
   };
   if (slugNorm === 'date-balls-chocolate') {
     merged.images = [finalImageUrl];
