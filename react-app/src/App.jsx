@@ -1,4 +1,4 @@
-/**
+ف/**
  * App — root component with React Router and global providers.
  * Routes: Home (/), Product detail (/product/:slug), Checkout (/checkout), Admin (/admin/*).
  */
