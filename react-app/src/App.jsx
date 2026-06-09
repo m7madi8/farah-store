@@ -3,20 +3,39 @@
  * Routes: Home (/), Product detail (/product/:slug), Checkout (/checkout), Admin (/admin/*).
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { LanguageProvider } from './context/LanguageContext';
 import { CartProvider } from './context/CartContext';
 import { HomePage } from './pages/HomePage';
-import { ProductDetailPage } from './pages/ProductDetailPage';
-import { CheckoutPage } from './pages/CheckoutPage';
-import { RequireAdmin } from './pages/admin/RequireAdmin';
-import { AdminLayout } from './pages/admin/AdminLayout';
-import { AdminLoginPage } from './pages/admin/AdminLoginPage';
-import { AdminPendingPage } from './pages/admin/AdminPendingPage';
-import { AdminApprovedPage } from './pages/admin/AdminApprovedPage';
-import { AdminStatsPage } from './pages/admin/AdminStatsPage';
-import { AdminProductsPage } from './pages/admin/AdminProductsPage';
+
+const ProductDetailPage = lazy(() =>
+  import('./pages/ProductDetailPage').then((m) => ({ default: m.ProductDetailPage }))
+);
+const CheckoutPage = lazy(() =>
+  import('./pages/CheckoutPage').then((m) => ({ default: m.CheckoutPage }))
+);
+const RequireAdmin = lazy(() =>
+  import('./pages/admin/RequireAdmin').then((m) => ({ default: m.RequireAdmin }))
+);
+const AdminLayout = lazy(() =>
+  import('./pages/admin/AdminLayout').then((m) => ({ default: m.AdminLayout }))
+);
+const AdminLoginPage = lazy(() =>
+  import('./pages/admin/AdminLoginPage').then((m) => ({ default: m.AdminLoginPage }))
+);
+const AdminPendingPage = lazy(() =>
+  import('./pages/admin/AdminPendingPage').then((m) => ({ default: m.AdminPendingPage }))
+);
+const AdminApprovedPage = lazy(() =>
+  import('./pages/admin/AdminApprovedPage').then((m) => ({ default: m.AdminApprovedPage }))
+);
+const AdminStatsPage = lazy(() =>
+  import('./pages/admin/AdminStatsPage').then((m) => ({ default: m.AdminStatsPage }))
+);
+const AdminProductsPage = lazy(() =>
+  import('./pages/admin/AdminProductsPage').then((m) => ({ default: m.AdminProductsPage }))
+);
 
 function AppRoutes() {
   const location = useLocation();
@@ -35,7 +54,7 @@ function AppRoutes() {
   }, [location.pathname, location.hash]);
 
   return (
-    <>
+    <Suspense fallback={null}>
       <Routes>
         <Route path="/" element={<HomePage cartOpen={cartOpen} onCartOpen={toggleCart} setCartOpen={setCartOpen} />} />
         <Route
@@ -56,7 +75,7 @@ function AppRoutes() {
           </Route>
         </Route>
       </Routes>
-    </>
+    </Suspense>
   );
 }
 

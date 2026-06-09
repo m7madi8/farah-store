@@ -3,6 +3,7 @@
  */
 
 import { useLanguage } from '../context/LanguageContext';
+import { BiIcon } from './BiIcon';
 
 export function Footer() {
   const { t } = useLanguage();
@@ -23,7 +24,7 @@ export function Footer() {
             rel="noopener noreferrer"
             aria-label="Instagram"
           >
-            <i className="bi bi-instagram" aria-hidden="true" />
+            <BiIcon name="instagram" />
             <span>{t('footer.instagram')}</span>
           </a>
         </div>
@@ -31,7 +32,7 @@ export function Footer() {
           <span className="footer-label">{t('footer.paymentMethods')}</span>
           <div className="footer-payment">
             <span className="footer-payment-item footer-payment-cod">
-              <i className="bi bi-cash-coin" aria-hidden="true" />
+              <BiIcon name="cash-coin" />
               <span className="footer-payment-cod-text">{t('footer.payOnDelivery')}</span>
             </span>
           </div>

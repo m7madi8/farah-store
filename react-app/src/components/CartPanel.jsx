@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
 import { resolveCartLineKey } from '../lib/cartLineKey';
+import { BiIcon } from './BiIcon';
 
 export function CartPanel({ isOpen, onClose }) {
   const { t } = useLanguage();
@@ -29,7 +30,7 @@ export function CartPanel({ isOpen, onClose }) {
             onClick={onClose}
             aria-label="Close cart"
           >
-            <i className="bi bi-x-lg" />
+            <BiIcon name="x-lg" />
           </button>
         </div>
         <div className="cart-panel-list">
@@ -56,7 +57,7 @@ export function CartPanel({ isOpen, onClose }) {
         </div>
         {count === 0 && (
           <div className="cart-panel-empty">
-            <i className="bi bi-cart-x" />
+            <BiIcon name="cart-x" />
             <p>{t('cart.empty')}</p>
           </div>
         )}

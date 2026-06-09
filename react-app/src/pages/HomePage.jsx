@@ -10,15 +10,16 @@ import { Footer } from '../components/Footer';
 import { ProductCard } from '../components/ProductCard';
 import { CartPanel } from '../components/CartPanel';
 import { CartToast } from '../components/CartToast';
-import { CookieConsent } from '../components/CookieConsent';
 import { useLanguage } from '../context/LanguageContext';
-import { fetchProducts } from '../services/api';
+import { fetchProducts, getMockProducts } from '../services/api';
+import { BiIcon } from '../components/BiIcon';
 
 export function HomePage({ onCartOpen, cartOpen, setCartOpen }) {
   const { t, lang } = useLanguage();
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState(getMockProducts);
+  const [remoteChecked, setRemoteChecked] = useState(false);
   const [toastShow, setToastShow] = useState(false);
+  const [CookieConsent, setCookieConsent] = useState(null);
   const [activeBoxIndex, setActiveBoxIndex] = useState(0);
   const [activeSauceIndex, setActiveSauceIndex] = useState(0);
   const boxesGridRef = useRef(null);
@@ -26,13 +27,23 @@ export function HomePage({ onCartOpen, cartOpen, setCartOpen }) {
 
   useEffect(() => {
     let cancelled = false;
+    import('../components/CookieConsent').then((mod) => {
+      if (!cancelled) setCookieConsent(() => mod.CookieConsent);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
     fetchProducts()
       .then((list) => {
-        if (!cancelled && Array.isArray(list)) setProducts(list);
+        if (!cancelled && Array.isArray(list) && list.length > 0) {
+          setProducts(list);
+        }
       })
       .catch(() => {})
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) setRemoteChecked(true);
       });
     return () => { cancelled = true; };
   }, []);
@@ -147,7 +158,6 @@ export function HomePage({ onCartOpen, cartOpen, setCartOpen }) {
 
   return (
     <>
-      <PageLoader visible={loading && !products.length} />
       <Navbar onCartClick={onCartOpen} />
       <CartPanel isOpen={cartOpen} onClose={() => setCartOpen?.(false)} />
       <CartToast show={toastShow} onHide={() => setToastShow(false)} />
@@ -273,9 +283,9 @@ export function HomePage({ onCartOpen, cartOpen, setCartOpen }) {
                 </section>
               )}
             </div>
-            {shopList.length === 0 && (
+            {shopList.length === 0 && remoteChecked && (
               <div className="shop-empty" aria-live="polite">
-                <i className="bi bi-inbox" />
+                <BiIcon name="inbox" />
                 <p className="shop-empty-title">{emptyLabel}</p>
                 <p className="shop-empty-desc">{t('empty.desc')}</p>
               </div>
@@ -292,37 +302,13 @@ export function HomePage({ onCartOpen, cartOpen, setCartOpen }) {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <i className="bi bi-whatsapp" /> <span>{t('order.wa')}</span>
+              <BiIcon name="whatsapp" /> <span>{t('order.wa')}</span>
             </a>
           </div>
         </section>
         <Footer />
       </main>
-      <CookieConsent />
+      {CookieConsent ? <CookieConsent /> : null}
     </>
-  );
-}
-
-function PageLoader({ visible }) {
-  const [show, setShow] = useState(visible);
-  useEffect(() => {
-    if (!visible && show) {
-      const el = document.getElementById('pageLoader');
-      if (el) {
-        el.classList.add('loader-out');
-        const tmr = setTimeout(() => setShow(false), 450);
-        return () => clearTimeout(tmr);
-      }
-    }
-    setShow(visible);
-  }, [visible, show]);
-  if (!show) return null;
-  return (
-    <div className="page-loader" id="pageLoader">
-      <div className="loader-inner">
-        <img src="/img/logo.webp" alt="Chef Farah Ammar" className="loader-logo" width="220" height="110" decoding="async" />
-        <div className="loader-bar"><span className="loader-bar-fill" /></div>
-      </div>
-    </div>
   );
 }

@@ -1,12 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
+import { isSupabaseConfigured } from './supabaseConfig';
+
+export { isSupabaseConfigured };
 
 let browserClient;
-
-export function isSupabaseConfigured() {
-  const url = import.meta.env.VITE_SUPABASE_URL;
-  const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  return !!(url && String(url).trim() && key && String(key).trim());
-}
 
 /**
  * Browser Supabase client (anon key). Safe for storefront reads/inserts allowed by RLS.

@@ -14,17 +14,19 @@ export default defineConfig({
   },
   server: { port: 3000 },
   build: {
+    target: 'es2020',
     sourcemap: false,
+    cssCodeSplit: true,
+    modulePreload: { polyfill: false },
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
-          if (id.includes('node_modules')) {
-            if (id.includes('react-dom') || id.includes('react/')) return 'vendor-react';
-            if (id.includes('react-router')) return 'vendor-router';
-            if (id.includes('@supabase')) return 'vendor-supabase';
-            if (id.includes('@tanstack')) return 'vendor-tanstack';
-          }
-          return null;
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined;
+          if (id.includes('@supabase')) return 'vendor-supabase';
+          if (id.includes('@tanstack')) return 'vendor-tanstack';
+          if (id.includes('react-router')) return 'vendor-router';
+          if (id.includes('react-dom') || id.includes('/react/')) return 'vendor-react';
+          return undefined;
         },
       },
     },

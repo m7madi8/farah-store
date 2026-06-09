@@ -98,7 +98,7 @@ export function HeroBackground() {
     canvas.className = 'hero-ogl-canvas';
     container.appendChild(canvas);
 
-    const gl = canvas.getContext('webgl', { alpha: false, antialias: true });
+    const gl = canvas.getContext('webgl', { alpha: false, antialias: false, powerPreference: 'low-power' });
     if (!gl) return;
 
     const program = createProgram(gl, vertexSrc, fragmentSrc);
@@ -116,7 +116,7 @@ export function HeroBackground() {
       if (!container.parentElement) return;
       const w = container.offsetWidth;
       const h = container.offsetHeight;
-      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      const dpr = Math.min(window.matchMedia('(max-width: 768px)').matches ? 1.25 : 1.75, window.devicePixelRatio || 1);
       canvas.width = w * dpr;
       canvas.height = h * dpr;
       canvas.style.width = w + 'px';
@@ -141,11 +141,11 @@ export function HeroBackground() {
       motionQuery.addListener(onReduceMotion);
     }
 
-    const animate = () => {
-      rafRef.current = requestAnimationFrame(animate);
-      if (!container.parentElement) return;
+    let isVisible = true;
+
+    const drawFrame = () => {
+      if (!container.parentElement || !isVisible) return;
       const elapsed = performance.now() / 1000 - startTimeRef.current;
-      /* Fixed phase when reduced motion — readable hero, no drifting gradient */
       const time = reducedMotion ? 1.25 : elapsed;
       gl.clearColor(0.176, 0.102, 0.239, 1.0);
       gl.clear(gl.COLOR_BUFFER_BIT);
@@ -157,6 +157,19 @@ export function HeroBackground() {
       gl.uniform2f(uResolution, canvas.width, canvas.height);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
     };
+
+    const animate = () => {
+      rafRef.current = requestAnimationFrame(animate);
+      drawFrame();
+    };
+
+    const visibilityObserver = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting;
+      },
+      { threshold: 0.05 }
+    );
+    visibilityObserver.observe(container);
     animate();
 
     return () => {
@@ -165,6 +178,7 @@ export function HeroBackground() {
       } else {
         motionQuery.removeListener(onReduceMotion);
       }
+      visibilityObserver.disconnect();
       rafRef.current && cancelAnimationFrame(rafRef.current);
       resizeObserver.disconnect();
       if (canvas.parentNode) container.removeChild(canvas);

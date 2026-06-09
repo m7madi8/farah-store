@@ -10,6 +10,7 @@ import { OrderSummary } from '../components/OrderSummary';
 import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
 import { submitOrder } from '../services/api';
+import { BiIcon } from '../components/BiIcon';
 
 const placeholders = {
   en: { phone: '05xxxxxxxx', address: 'Street, city, floor/apartment' },
@@ -79,7 +80,7 @@ export function CheckoutPage() {
         <main className="checkout-page">
           <div className="checkout-wrap">
             <div className="checkout-empty">
-              <i className="bi bi-cart-x" />
+              <BiIcon name="cart-x" />
               <p className="checkout-empty-title">{t('checkout.emptyCart')}</p>
               <p className="checkout-empty-desc">{t('checkout.emptyDesc')}</p>
               <Link to="/#product" className="btn-checkout-primary">
@@ -183,7 +184,7 @@ export function CheckoutPage() {
           aria-hidden={!success}
           hidden={!success}
         >
-          <i className="bi bi-check-circle-fill" aria-hidden="true" />
+          <BiIcon name="check-circle-fill" />
           <span className="checkout-toast-text">{t('checkout.successMessage')}</span>
         </div>
       </main>

@@ -2,12 +2,37 @@
  * Hero — full-viewport hero section with logo and tagline.
  */
 
+import { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { HeroBackground } from './HeroBackground';
+import { BiIcon } from './BiIcon';
 
 export function Hero() {
   const { t } = useLanguage();
   const tagline = t('hero.tagline');
+  const [HeroBackground, setHeroBackground] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = () => {
+      import('./HeroBackground').then((mod) => {
+        if (!cancelled) setHeroBackground(() => mod.HeroBackground);
+      });
+    };
+
+    if ('requestIdleCallback' in window) {
+      const id = window.requestIdleCallback(load, { timeout: 1200 });
+      return () => {
+        cancelled = true;
+        window.cancelIdleCallback(id);
+      };
+    }
+
+    const timer = setTimeout(load, 150);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, []);
 
   const scrollToShop = () => {
     document.getElementById('product')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -19,7 +44,7 @@ export function Hero() {
   return (
     <section className="hero-full" id="hero">
       <div className="hero-bg">
-        <HeroBackground />
+        {HeroBackground ? <HeroBackground /> : null}
       </div>
       <div className="hero-content">
         <img
@@ -29,7 +54,7 @@ export function Hero() {
           width="400"
           height="200"
           decoding="async"
-          fetchpriority="high"
+          fetchPriority="high"
         />
         <p className="hero-tagline hero-tagline-type" aria-label={tagline}>
           {parts.map((part, i) => (
@@ -52,7 +77,7 @@ export function Hero() {
       </div>
       <div className="hero-scroll anim-fade">
         <span>{t('hero.scroll')}</span>
-        <i className="bi bi-chevron-down" />
+        <BiIcon name="chevron-down" />
       </div>
     </section>
   );

@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { BiIcon } from './BiIcon';
 
 const STORAGE_KEY = 'farah-cookie-consent';
 
@@ -43,7 +44,7 @@ export function CookieConsent() {
     >
       <div className="cookie-consent-inner">
         <span className="cookie-consent-icon" aria-hidden="true">
-          <i className="bi bi-cookie" />
+          <BiIcon name="cookie" />
         </span>
         <p className="cookie-consent-msg">{t('cookie.msg')}</p>
         <div className="cookie-consent-btns">

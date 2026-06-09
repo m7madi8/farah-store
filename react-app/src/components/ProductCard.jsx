@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
 import { NO_DETAIL_PAGE_SLUGS } from '../constants/products';
+import { BiIcon } from './BiIcon';
 
 const PRODUCT_PLACEHOLDER_SVG =
   'data:image/svg+xml;utf8,' +
@@ -144,7 +145,7 @@ export function ProductCard({ product, onShowToast }) {
         {hasDetailPage && (
           <Link className="product-preview-view-btn" to={`/product/${product.slug}`}>
             <span>{t('product.viewProduct')}</span>
-            <i className="bi bi-arrow-right" aria-hidden="true" />
+            <BiIcon name="arrow-right" />
           </Link>
         )}
         <button
@@ -154,7 +155,7 @@ export function ProductCard({ product, onShowToast }) {
           disabled={!canAddToCart}
           title={!canAddToCart ? (lang === 'ar' ? 'اختر الحجم أولاً' : 'Choose size first') : undefined}
         >
-          <i className="bi bi-cart-plus" aria-hidden="true" />
+          <BiIcon name="cart-plus" />
           <span>{canAddToCart ? t('product.addToCart') : t('product.chooseSize')}</span>
         </button>
       </div>

@@ -7,7 +7,17 @@
  * 3. Mock — built-in demo catalog + local checkout success.
  */
 
-import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
+import { isSupabaseConfigured } from '@/lib/supabaseConfig';
+import { MOCK_PRODUCTS } from './mockProducts';
+
+let supabaseModulePromise;
+
+function loadSupabaseModule() {
+  if (!supabaseModulePromise) {
+    supabaseModulePromise = import('@/lib/supabase');
+  }
+  return supabaseModulePromise;
+}
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -20,6 +30,27 @@ function apiBase() {
   return raw != null && String(raw).trim() !== ''
     ? String(raw).replace(/\/$/, '')
     : '';
+}
+
+/** Fail fast when Supabase/REST host is unreachable (avoids long DNS hangs). */
+const REMOTE_TIMEOUT_MS = 4000;
+
+function withTimeout(promise, ms, label = 'Request') {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(`${label} timed out after ${ms}ms`)),
+      ms
+    );
+    promise
+      .then((value) => {
+        clearTimeout(timer);
+        resolve(value);
+      })
+      .catch((err) => {
+        clearTimeout(timer);
+        reject(err);
+      });
+  });
 }
 
 const DEFAULT_PRODUCT_IMAGE = '/img/2.webp';
@@ -46,39 +77,6 @@ function localImageBySlug(slug) {
   }
   return `/img/products/${cleanSlug}/${cleanSlug}.webp`;
 }
-
-/**
- * Fallback product list when no remote source is available.
- */
-const MOCK_PRODUCTS = [
-  { id: '1', slug: 'dumplings-chicken', name: 'Dumplings – Chicken', nameAr: 'دامبلنغ – دجاج', description: 'Handcrafted chicken dumplings with rich flavors. Created by Chef Farah.', descriptionAr: 'دامبلنغ دجاج مصنوع يدوياً بنكهات غنية. من إبداع الشيف فرح.', price: 25, category: 'boxes', imageUrl: '/img/1.webp', heroImage: '/img/2.webp', order: 1, badge: 'Signature', details: ['detail1', 'detail2', 'detail3', 'detail4', 'detail5', 'detailTeriyaki', 'detailSweetChili', 'detail6'] },
-  { id: '2', slug: 'dumplings-meat', name: 'Dumplings – Meat', nameAr: 'دامبلنغ – لحم', description: 'Handcrafted meat dumplings with rich flavors. Created by Chef Farah.', descriptionAr: 'دامبلنغ لحم مصنوع يدوياً بنكهات غنية. من إبداع الشيف فرح.', price: 27, category: 'boxes', imageUrl: '/img/1.webp', heroImage: '/img/2.webp', order: 2, badge: 'Signature', details: ['detail1', 'detail2Meat', 'detail3', 'detail4', 'detail5', 'detailTeriyaki', 'detailSweetChili', 'detail6'] },
-  { id: '3', slug: 'teriyaki-sauce', name: 'Teriyaki sauce', nameAr: 'صلصة ترياكي', description: 'Rich teriyaki glaze, perfect for dumplings and stir-fry.', descriptionAr: 'صلصة ترياكي غنية، مثالية للدامبلنغ والقلي السريع.', price: 2, category: 'sauces', imageUrl: '/img/teriyaki.webp', heroImage: '/img/teriyaki.webp', order: 3, badge: 'Sauce', details: [] },
-  { id: '4', slug: 'soya-sauce', name: 'Soya sauce', nameAr: 'صلصة صويا', description: 'Classic soy sauce for dipping and cooking.', descriptionAr: 'صلصة صويا كلاسيكية للغمس والطبخ.', price: 2, category: 'sauces', imageUrl: '/img/soya.webp', heroImage: '/img/soya.webp', order: 4, badge: 'Sauce', details: [] },
-  { id: '5', slug: 'buffalo-sauce', name: 'Buffalo sauce', nameAr: 'صلصة بافلو', description: 'Spicy buffalo sauce for a bold kick.', descriptionAr: 'صلصة بافلو حارة لمذاق قوي.', price: 2, category: 'sauces', imageUrl: '/img/buffalo.webp', heroImage: '/img/buffalo.webp', order: 5, badge: 'Sauce', details: [] },
-  { id: '6', slug: 'sweet-chili-sauce', name: 'Sweet chili sauce', nameAr: 'صلصة الفلفل الحلو', description: 'Sweet and tangy chili sauce for dipping.', descriptionAr: 'صلصة فلفل حلوة وحامضة للغمس.', price: 2, category: 'sauces', imageUrl: '/img/sweet-chili.webp', heroImage: '/img/sweet-chili.webp', order: 6, badge: 'Sauce', details: [] },
-  { id: '7', slug: 'chop-sticks', name: 'Chop sticks', nameAr: 'عيدان الطعام', description: '1 ₪ per stick (not per pack).', descriptionAr: '1 ₪ للعود الواحد (وليس للمجموعة).', price: 1, category: 'chopsticks', imageUrl: '/img/chop-sticks.webp', heroImage: '/img/chop-sticks.webp', order: 7, badge: 'Accessory', details: [] },
-  {
-    id: '8',
-    slug: 'date-balls-chocolate',
-    name: 'Date balls with chocolate',
-    nameAr: 'كرات التمر بالشوكولاته',
-    description: 'Delicious date balls coated in chocolate. Two sizes available.',
-    descriptionAr: 'كرات تمر لذيذة مغطاة بالشوكولاته. حجمين متوفرين.',
-    price: 25,
-    category: 'boxes',
-    imageUrl: '/img/pro2.png',
-    heroImage: '/img/pro2.png',
-    order: 8,
-    badge: 'Signature',
-    details: [],
-    variants: [
-      { key: '7', labelEn: '7 pieces', labelAr: '٧ حبات', price: 25 },
-      { key: '16', labelEn: '16 pieces', labelAr: '١٦ حبة', price: 45 },
-    ],
-    images: ['/img/pro2.png'],
-  },
-];
 
 async function request(path, options = {}) {
   const base = apiBase();
@@ -209,6 +207,7 @@ function mapSupabaseProductRow(row) {
 }
 
 async function fetchProductsFromSupabase() {
+  const { getSupabase } = await loadSupabaseModule();
   const supabase = getSupabase();
   const { data, error } = await supabase
     .from('products')
@@ -219,6 +218,7 @@ async function fetchProductsFromSupabase() {
 }
 
 async function submitOrderSupabase(orderPayload) {
+  const { getSupabase } = await loadSupabaseModule();
   const supabase = getSupabase();
   const orderId = crypto.randomUUID();
   const { error: orderErr } = await supabase.from('orders').insert({
@@ -255,8 +255,13 @@ async function submitOrderSupabase(orderPayload) {
   };
 }
 
-function mockProductsList() {
+/** Synchronous demo catalog — instant storefront paint before remote fetch. */
+export function getMockProducts() {
   return MOCK_PRODUCTS.map(normalizeProduct);
+}
+
+function mockProductsList() {
+  return getMockProducts();
 }
 
 /**
@@ -265,7 +270,11 @@ function mockProductsList() {
 export async function fetchProducts() {
   if (isSupabaseConfigured()) {
     try {
-      const list = await fetchProductsFromSupabase();
+      const list = await withTimeout(
+        fetchProductsFromSupabase(),
+        REMOTE_TIMEOUT_MS,
+        'Supabase products'
+      );
       if (Array.isArray(list) && list.length > 0) return list;
     } catch (err) {
       console.warn('[fetchProducts] Supabase:', err);
@@ -274,7 +283,7 @@ export async function fetchProducts() {
 
   if (apiBase()) {
     try {
-      const data = await request('/products/');
+      const data = await withTimeout(request('/products/'), REMOTE_TIMEOUT_MS, 'REST products');
       const raw = Array.isArray(data) ? data : (data?.results ?? data?.products ?? []);
       const list = Array.isArray(raw) ? raw : [];
       return list.map(normalizeProduct);
@@ -327,5 +336,3 @@ export async function submitOrder(orderPayload) {
   });
 }
 
-/** Re-export Supabase flag for admin UI (avoid importing lib/supabase everywhere). */
-export { isSupabaseConfigured };

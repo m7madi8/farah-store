@@ -1,3 +1,4 @@
+import '@/styles/admin.css';
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/context/LanguageContext';

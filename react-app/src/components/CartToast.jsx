@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { BiIcon } from './BiIcon';
 
 export function CartToast({ show, onHide }) {
   const { t } = useLanguage();
@@ -27,7 +28,7 @@ export function CartToast({ show, onHide }) {
       aria-live="polite"
       aria-hidden={!visible}
     >
-      <i className="bi bi-check-circle-fill cart-toast-icon" />
+      <BiIcon name="check-circle-fill" className="cart-toast-icon" />
       <span className="cart-toast-text">{t('cart.added')}</span>
     </div>
   );

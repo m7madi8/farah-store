@@ -3,6 +3,7 @@
  * Data from API by slug (route param). Deep link: /product/:slug.
  */
 
+import '@/styles/product.css';
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { NO_DETAIL_PAGE_SLUGS } from '../constants/products';
@@ -13,6 +14,7 @@ import { CartToast } from '../components/CartToast';
 import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
 import { fetchProductBySlug } from '../services/api';
+import { BiIcon } from '../components/BiIcon';
 
 const DETAIL_IMAGE_FALLBACK = '/img/2.webp';
 const DUMPLING_HERO_BG_SLUGS = ['dumplings-chicken', 'dumplings-meat'];
@@ -180,7 +182,7 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
                 }, 80);
               }}
             >
-              <i className="bi bi-arrow-left" aria-hidden="true" />
+              <BiIcon name="arrow-left" />
               <span>{t('product.backHome')}</span>
             </button>
             <header className="product-header">
@@ -224,7 +226,7 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
                   className="product-btn product-btn-cart"
                   onClick={handleAddToCart}
                 >
-                  <i className="bi bi-bag-plus" aria-hidden="true" />
+                  <BiIcon name="bag-plus" />
                   <span>{t('product.addToCart')}</span>
                 </button>
                 <button
@@ -232,7 +234,7 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
                   className="product-btn product-btn-cod"
                   onClick={handleCashOnDelivery}
                 >
-                  <i className="bi bi-cash-stack" aria-hidden="true" />
+                  <BiIcon name="cash-stack" />
                   <span>{t('product.btnCod')}</span>
                 </button>
               </div>

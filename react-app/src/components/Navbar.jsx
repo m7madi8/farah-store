@@ -7,6 +7,7 @@ import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
+import { BiIcon } from './BiIcon';
 
 export function Navbar({ onCartClick, showCart = true, backToShop = false, alwaysShowBackground = false }) {
   const { t, lang, toggleLang } = useLanguage();
@@ -49,7 +50,7 @@ export function Navbar({ onCartClick, showCart = true, backToShop = false, alway
             aria-label={lang === 'ar' ? 'Switch to English' : 'Switch to Arabic'}
             title={lang === 'ar' ? 'English' : 'العربية'}
           >
-            <i className="bi bi-translate" aria-hidden="true" />
+            <BiIcon name="translate" />
           </button>
           {backToShop ? (
             <Link className="nav-order" to="/#product">
@@ -66,7 +67,7 @@ export function Navbar({ onCartClick, showCart = true, backToShop = false, alway
                   aria-expanded="false"
                   aria-haspopup="true"
                 >
-                  <i className="bi bi-cart3" aria-hidden="true" />
+                  <BiIcon name="cart3" />
                   <span
                     className="nav-cart-badge"
                     aria-hidden={itemCount === 0}
