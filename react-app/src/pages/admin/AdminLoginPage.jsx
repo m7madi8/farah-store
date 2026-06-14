@@ -2,10 +2,21 @@ import '@/styles/admin.css';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/context/LanguageContext';
-import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
+import { isFirebaseConfigured } from '@/lib/firebaseConfig';
+import { getFirebaseAuth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+
+function loginErrorMessage(err, t) {
+  const code = err?.code || '';
+  if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') {
+    return t('admin.loginInvalidCredential');
+  }
+  if (code === 'auth/too-many-requests') return t('admin.loginTooManyRequests');
+  if (code === 'auth/network-request-failed') return t('admin.loginNetworkError');
+  return err?.message || t('admin.loginInvalidCredential');
+}
 
 export function AdminLoginPage() {
   const { t } = useLanguage();
@@ -16,30 +27,28 @@ export function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!isSupabaseConfigured()) return undefined;
-    getSupabase()
-      .auth.getSession()
-      .then(({ data }) => {
-        if (data.session) navigate('/admin/pending', { replace: true });
-      });
+    if (!isFirebaseConfigured()) return undefined;
+    getFirebaseAuth().then((auth) => {
+      if (auth.currentUser) navigate('/admin/pending', { replace: true });
+    });
     return undefined;
   }, [navigate]);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
-    if (!isSupabaseConfigured()) {
+    if (!isFirebaseConfigured()) {
       setError(t('admin.configMissing'));
       return;
     }
     setLoading(true);
     try {
-      const { error: signErr } = await getSupabase().auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
-      if (signErr) {
-        setError(signErr.message);
+      const auth = await getFirebaseAuth();
+      const { signInWithEmailAndPassword } = await import('firebase/auth');
+      try {
+        await signInWithEmailAndPassword(auth, email.trim(), password);
+      } catch (signErr) {
+        setError(loginErrorMessage(signErr, t));
         return;
       }
       navigate('/admin/pending', { replace: true });
@@ -48,7 +57,7 @@ export function AdminLoginPage() {
     }
   }
 
-  if (!isSupabaseConfigured()) {
+  if (!isFirebaseConfigured()) {
     return (
       <div className="admin-app admin-login-shell font-ui">
         <div className="admin-login-form-wrap">

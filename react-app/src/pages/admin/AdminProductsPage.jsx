@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { useLanguage } from '@/context/LanguageContext';
-import { getSupabase } from '@/lib/supabase';
+import { getFirestoreDb } from '@/lib/firebase';
+import { mapFirestoreProductRow } from '@/lib/firestoreMappers';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 function productImageSrc(row) {
@@ -24,12 +25,13 @@ export function AdminProductsPage() {
       setIsLoading(true);
       setError(null);
       try {
-        const sb = getSupabase();
-        const { data: rows, error: qErr } = await sb
-          .from('products')
-          .select('*')
-          .order('sort_order', { ascending: true });
-        if (qErr) throw qErr;
+        const [{ collection, getDocs, orderBy, query }, db] = await Promise.all([
+          import('firebase/firestore'),
+          getFirestoreDb(),
+        ]);
+        const q = query(collection(db, 'products'), orderBy('sort_order', 'asc'));
+        const snap = await getDocs(q);
+        const rows = snap.docs.map((docSnap) => mapFirestoreProductRow(docSnap.id, docSnap.data()));
         if (!cancelled) setData(rows ?? []);
       } catch (e) {
         if (!cancelled) setError(e);

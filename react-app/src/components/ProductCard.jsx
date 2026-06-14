@@ -3,12 +3,12 @@
  * For products with variants (e.g. date balls), size selection is required before add to cart.
  */
 
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
 import { NO_DETAIL_PAGE_SLUGS } from '../constants/products';
-import { BiIcon } from './BiIcon';
+import { SiteIcon } from './SiteIcon';
 
 const PRODUCT_PLACEHOLDER_SVG =
   'data:image/svg+xml;utf8,' +
@@ -69,6 +69,21 @@ export function ProductCard({ product, onShowToast }) {
     setSelectedVariantIndex(index);
   };
 
+  const prefetchedRef = useRef(false);
+  const prefetchDetailPage = useCallback(() => {
+    if (!hasDetailPage || prefetchedRef.current) return;
+    prefetchedRef.current = true;
+    const heroSrc = product.heroImage || product.imageUrl;
+    if (heroSrc) {
+      const img = new Image();
+      img.src = heroSrc;
+    }
+  }, [hasDetailPage, product.heroImage, product.imageUrl]);
+
+  const detailLinkProps = hasDetailPage
+    ? { to: `/product/${product.slug}`, state: { product }, onMouseEnter: prefetchDetailPage, onFocus: prefetchDetailPage, onTouchStart: prefetchDetailPage }
+    : null;
+
   const cardContent = (
     <>
       <div className="product-preview-image">
@@ -77,8 +92,10 @@ export function ProductCard({ product, onShowToast }) {
           alt={name}
           width="400"
           height="300"
+          sizes="(max-width: 768px) 82vw, 320px"
           loading="lazy"
           decoding="async"
+          fetchpriority="low"
           onError={(e) => {
             if (e.currentTarget.src.endsWith(STATIC_PRODUCT_FALLBACK)) {
               e.currentTarget.src = PRODUCT_PLACEHOLDER_SVG;
@@ -131,7 +148,7 @@ export function ProductCard({ product, onShowToast }) {
       data-order={product.order}
     >
       {hasDetailPage ? (
-        <Link to={`/product/${product.slug}`} className="product-preview-link">
+        <Link {...detailLinkProps} className="product-preview-link">
           {cardContent}
         </Link>
       ) : (
@@ -143,9 +160,9 @@ export function ProductCard({ product, onShowToast }) {
         className={`product-preview-actions${hasDetailPage ? '' : ' product-preview-actions--single'}`}
       >
         {hasDetailPage && (
-          <Link className="product-preview-view-btn" to={`/product/${product.slug}`}>
+          <Link className="product-preview-view-btn" {...detailLinkProps}>
             <span>{t('product.viewProduct')}</span>
-            <BiIcon name="arrow-right" />
+            <SiteIcon name="arrow-forward" />
           </Link>
         )}
         <button
@@ -155,7 +172,7 @@ export function ProductCard({ product, onShowToast }) {
           disabled={!canAddToCart}
           title={!canAddToCart ? (lang === 'ar' ? 'اختر الحجم أولاً' : 'Choose size first') : undefined}
         >
-          <BiIcon name="cart-plus" />
+          <SiteIcon name="cart-add" />
           <span>{canAddToCart ? t('product.addToCart') : t('product.chooseSize')}</span>
         </button>
       </div>

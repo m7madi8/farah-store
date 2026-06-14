@@ -3,7 +3,8 @@
  */
 
 import { useLanguage } from '../context/LanguageContext';
-import { BiIcon } from './BiIcon';
+import { siteConfig } from '../config/env';
+import { SiteIcon } from './SiteIcon';
 
 export function Footer() {
   const { t } = useLanguage();
@@ -18,13 +19,13 @@ export function Footer() {
         <div className="footer-col footer-col-connect">
           <span className="footer-label">{t('footer.followUs')}</span>
           <a
-            href="https://instagram.com/cheffarahammar"
+            href={siteConfig.instagramUrl || 'https://instagram.com'}
             className="footer-instagram"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Instagram"
           >
-            <BiIcon name="instagram" />
+            <SiteIcon name="instagram" />
             <span>{t('footer.instagram')}</span>
           </a>
         </div>
@@ -32,7 +33,7 @@ export function Footer() {
           <span className="footer-label">{t('footer.paymentMethods')}</span>
           <div className="footer-payment">
             <span className="footer-payment-item footer-payment-cod">
-              <BiIcon name="cash-coin" />
+              <SiteIcon name="cod" />
               <span className="footer-payment-cod-text">{t('footer.payOnDelivery')}</span>
             </span>
           </div>

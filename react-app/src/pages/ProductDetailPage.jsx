@@ -4,8 +4,8 @@
  */
 
 import '@/styles/product.css';
-import { useState, useEffect } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { NO_DETAIL_PAGE_SLUGS } from '../constants/products';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
@@ -13,11 +13,11 @@ import { CartPanel } from '../components/CartPanel';
 import { CartToast } from '../components/CartToast';
 import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
-import { fetchProductBySlug } from '../services/api';
-import { BiIcon } from '../components/BiIcon';
+import { fetchProductBySlug, getProductBySlug } from '../services/api';
+import { scrollToPageHeaderAfterPaint } from '../lib/scrollToTop';
+import { SiteIcon } from '../components/SiteIcon';
 
 const DETAIL_IMAGE_FALLBACK = '/img/2.webp';
-const DUMPLING_HERO_BG_SLUGS = ['dumplings-chicken', 'dumplings-meat'];
 const DETAIL_IMAGE_PLACEHOLDER =
   'data:image/svg+xml;utf8,' +
   encodeURIComponent(
@@ -35,39 +35,69 @@ const DETAIL_IMAGE_PLACEHOLDER =
     </svg>`
   );
 
+function resolveInitialProduct(slug, fromNav) {
+  if (fromNav?.slug === slug) return fromNav;
+  return getProductBySlug(slug);
+}
+
 export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t, lang } = useLanguage();
   const { addItem } = useCart();
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const navProduct = location.state?.product;
+  const [product, setProduct] = useState(() => resolveInitialProduct(slug, navProduct));
+  const [notFound, setNotFound] = useState(false);
   const [toastShow, setToastShow] = useState(false);
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
   const [galleryIndex, setGalleryIndex] = useState(0);
 
-  // Products with no detail page: redirect to home
   useEffect(() => {
     if (slug && NO_DETAIL_PAGE_SLUGS.includes(slug)) {
       navigate('/', { replace: true });
-      return;
     }
   }, [slug, navigate]);
 
   useEffect(() => {
-    let cancelled = false;
-    fetchProductBySlug(slug).then((p) => {
-      if (!cancelled) {
-        setProduct(p);
-        setSelectedVariantIndex(0);
-        setGalleryIndex(0);
-        setLoading(false);
-      }
-    }).catch(() => {
-      if (!cancelled) setLoading(false);
-    });
-    return () => { cancelled = true; };
+    scrollToPageHeaderAfterPaint();
+    const prev = history.scrollRestoration;
+    history.scrollRestoration = 'manual';
+    return () => {
+      history.scrollRestoration = prev;
+    };
   }, [slug]);
+
+  useEffect(() => {
+    if (!product) return undefined;
+    scrollToPageHeaderAfterPaint();
+    return undefined;
+  }, [product?.slug]);
+
+  useEffect(() => {
+    const initial = resolveInitialProduct(slug, navProduct);
+    setProduct(initial);
+    setNotFound(false);
+    setSelectedVariantIndex(0);
+    setGalleryIndex(0);
+
+    let cancelled = false;
+    fetchProductBySlug(slug)
+      .then((p) => {
+        if (cancelled) return;
+        if (p) {
+          setProduct(p);
+          setNotFound(false);
+        } else if (!initial) {
+          setNotFound(true);
+        }
+      })
+      .catch(() => {
+        if (!cancelled && !initial) setNotFound(true);
+      });
+
+    return () => { cancelled = true; };
+  }, [slug, navProduct]);
 
   const name = lang === 'ar' && product?.nameAr ? product.nameAr : (product?.name || '');
   const desc = lang === 'ar' && product?.descriptionAr ? product.descriptionAr : (product?.description || '');
@@ -78,23 +108,35 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
     ? `${name} (${lang === 'ar' ? selectedVariant.labelAr : selectedVariant.labelEn})`
     : name;
 
-  const galleryImages = product?.images && product.images.length > 0 ? product.images : [product?.imageUrl || DETAIL_IMAGE_FALLBACK];
+  const galleryImages = useMemo(
+    () => (product?.images && product.images.length > 0 ? product.images : [product?.imageUrl || DETAIL_IMAGE_FALLBACK]),
+    [product]
+  );
   const mainImageSrc = galleryImages[galleryIndex] || galleryImages[0] || DETAIL_IMAGE_FALLBACK;
 
   const isDateBalls = product?.slug === 'date-balls-chocolate';
-  const isDumplingHeroBg = DUMPLING_HERO_BG_SLUGS.includes(product?.slug);
 
-  if (loading || !product) {
+  useEffect(() => {
+    if (!mainImageSrc || mainImageSrc.startsWith('data:')) return undefined;
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = mainImageSrc;
+    document.head.appendChild(link);
+    return () => { link.remove(); };
+  }, [mainImageSrc]);
+
+  if (!product) {
     return (
       <>
         <Navbar backToShop alwaysShowBackground onCartClick={onCartOpen ? () => onCartOpen(true) : undefined} />
         <main className="product-main" style={{ padding: '4rem 1rem', textAlign: 'center' }}>
-          {loading ? <p>{lang === 'ar' ? 'جاري التحميل...' : 'Loading...'}</p> : (
+          {notFound ? (
             <>
               <p>{lang === 'ar' ? 'المنتج غير موجود' : 'Product not found'}</p>
               <Link to="/">{(lang === 'ar' ? 'الرئيسية' : 'Home')}</Link>
             </>
-          )}
+          ) : null}
         </main>
       </>
     );
@@ -125,12 +167,8 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
       <Navbar backToShop={false} alwaysShowBackground onCartClick={onCartOpen ? () => onCartOpen(true) : undefined} />
       <CartPanel isOpen={cartOpen} onClose={() => setCartOpen?.(false)} />
       <CartToast show={toastShow} onHide={() => setToastShow(false)} />
-      <main className={`product-main ${isDateBalls ? 'product-main-date-balls' : ''}${isDumplingHeroBg ? ' product-main-dumplings' : ''}`}>
-        <div
-          className={`product-hero${isDateBalls ? ' product-hero-date-balls' : ''}${isDumplingHeroBg ? ' product-hero-dumplings' : ''}`}
-          {...(isDumplingHeroBg ? { role: 'img', 'aria-label': name } : {})}
-        >
-          {!isDumplingHeroBg && (
+      <main className={`product-main${isDateBalls ? ' product-main-date-balls' : ''}`}>
+        <div className={`product-hero${isDateBalls ? ' product-hero-date-balls' : ''}`}>
           <div className="product-hero-image product-hero-anim">
             <picture>
               <img
@@ -138,8 +176,10 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
                 alt={name}
                 width="1200"
                 height="750"
-                decoding="async"
-                fetchpriority="high"
+                loading="eager"
+                decoding="sync"
+                fetchPriority="high"
+                onLoad={() => scrollToPageHeaderAfterPaint()}
                 onError={(e) => {
                   if (e.currentTarget.src.endsWith(DETAIL_IMAGE_FALLBACK)) {
                     e.currentTarget.src = DETAIL_IMAGE_PLACEHOLDER;
@@ -166,7 +206,6 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
               </div>
             )}
           </div>
-          )}
           <div className="product-hero-overlay product-hero-anim" />
         </div>
         <div className="product-content product-content-anim">
@@ -182,7 +221,7 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
                 }, 80);
               }}
             >
-              <BiIcon name="arrow-left" />
+              <SiteIcon name="back" />
               <span>{t('product.backHome')}</span>
             </button>
             <header className="product-header">
@@ -226,7 +265,7 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
                   className="product-btn product-btn-cart"
                   onClick={handleAddToCart}
                 >
-                  <BiIcon name="bag-plus" />
+                  <SiteIcon name="cart-add" />
                   <span>{t('product.addToCart')}</span>
                 </button>
                 <button
@@ -234,7 +273,7 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
                   className="product-btn product-btn-cod"
                   onClick={handleCashOnDelivery}
                 >
-                  <BiIcon name="cash-stack" />
+                  <SiteIcon name="cod" />
                   <span>{t('product.btnCod')}</span>
                 </button>
               </div>

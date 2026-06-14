@@ -1,6 +1,13 @@
 import { Button } from '@/components/ui/button';
 import { AdminStatusBadge } from './AdminStatusBadge';
+import { printOrderInvoice } from './adminPrint';
 import { isPendingOrder, normalizeOrderStatus } from './orderUtils';
+import {
+  formatCoordinates,
+  googleMapsDirectionsUrl,
+  googleMapsViewUrl,
+  hasValidLocation,
+} from '@/lib/googleMaps';
 
 function formatWhen(iso, locale) {
   if (!iso) return '—';
@@ -50,13 +57,24 @@ function OrderCard({
 }) {
   const items = order.order_items || [];
   const pending = isPendingOrder(order);
+  const hasLocation = hasValidLocation(order);
+  const mapsViewUrl = hasLocation
+    ? googleMapsViewUrl(order.location_lat, order.location_lng)
+    : null;
+  const mapsDirectionsUrl = hasLocation
+    ? googleMapsDirectionsUrl(order.location_lat, order.location_lng)
+    : null;
 
   return (
     <article className={`admin-order-card${expanded ? ' is-expanded' : ''}${pending ? ' admin-order-card--pending' : ' admin-order-card--approved'}`}>
       <div className={`admin-order-card-head${expanded ? '' : ' admin-order-card-head--compact'}`}>
         <div className="admin-order-card-meta">
-          <h3 className="admin-order-name">{order.customer_name || '—'}</h3>
-          {expanded ? <p className="admin-order-when">{formatWhen(order.created_at, lang)}</p> : null}
+          <div className="admin-order-card-title-row">
+            <h3 className="admin-order-name">{order.customer_name || '—'}</h3>
+            <time className="admin-order-when" dateTime={order.created_at || undefined}>
+              {formatWhen(order.created_at, lang)}
+            </time>
+          </div>
         </div>
         {expanded ? (
           <div className="admin-order-card-side">
@@ -82,7 +100,13 @@ function OrderCard({
         <dl className="admin-order-details">
           <OrderDetailRow label={t('admin.colPhone')} value={order.customer_phone} href={`tel:${order.customer_phone}`} />
           <OrderDetailRow label={t('admin.colAddress')} value={order.shipping_address} />
-          <OrderDetailRow label={t('admin.colDate')} value={formatWhen(order.created_at, lang)} />
+          {hasLocation ? (
+            <OrderDetailRow
+              label={t('admin.colLocation')}
+              value={formatCoordinates(order.location_lat, order.location_lng, lang)}
+              href={mapsViewUrl}
+            />
+          ) : null}
           <OrderDetailRow label={t('admin.colTotal')} value={`₪ ${Number(order.total || 0).toFixed(2)}`} />
           <OrderDetailRow label={t('admin.colStatus')} value={statusLabel(order.status, t)} />
           {order.notes ? <OrderDetailRow label={t('admin.colNotes')} value={order.notes} /> : null}
@@ -108,8 +132,42 @@ function OrderCard({
       ) : null}
 
       <div className="admin-order-actions">
+        {hasLocation ? (
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="admin-btn-map flex-1"
+              asChild
+            >
+              <a href={mapsViewUrl} target="_blank" rel="noopener noreferrer">
+                {t('admin.viewLocation')}
+              </a>
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              className="admin-btn-directions flex-1"
+              asChild
+            >
+              <a href={mapsDirectionsUrl} target="_blank" rel="noopener noreferrer">
+                {t('admin.getDirections')}
+              </a>
+            </Button>
+          </>
+        ) : null}
         <Button type="button" variant="outline" size="sm" className="flex-1" onClick={onToggle}>
           {expanded ? t('admin.hideOrder') : t('admin.viewOrder')}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="admin-btn-print flex-1"
+          onClick={() => printOrderInvoice(order, { t, lang })}
+        >
+          {t('admin.printInvoice')}
         </Button>
         <Button
           type="button"

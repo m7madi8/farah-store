@@ -8,10 +8,10 @@ import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-route
 import { LanguageProvider } from './context/LanguageContext';
 import { CartProvider } from './context/CartContext';
 import { HomePage } from './pages/HomePage';
+import { ProductDetailPage } from './pages/ProductDetailPage';
+import { SiteMeta } from './components/SiteMeta';
+import { scrollToPageHeaderAfterPaint } from './lib/scrollToTop';
 
-const ProductDetailPage = lazy(() =>
-  import('./pages/ProductDetailPage').then((m) => ({ default: m.ProductDetailPage }))
-);
 const CheckoutPage = lazy(() =>
   import('./pages/CheckoutPage').then((m) => ({ default: m.CheckoutPage }))
 );
@@ -43,11 +43,11 @@ function AppRoutes() {
   const toggleCart = () => setCartOpen((prev) => !prev);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    scrollToPageHeaderAfterPaint();
   }, [location.pathname]);
 
   useEffect(() => {
-    if (location.hash === '#product') {
+    if (location.pathname === '/' && location.hash === '#product') {
       const el = document.getElementById('product');
       if (el) el.scrollIntoView({ behavior: 'smooth' });
     }
@@ -89,6 +89,7 @@ export default function App() {
     >
       <LanguageProvider>
         <CartProvider>
+          <SiteMeta />
           <AppRoutes />
         </CartProvider>
       </LanguageProvider>

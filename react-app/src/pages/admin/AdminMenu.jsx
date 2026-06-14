@@ -1,14 +1,18 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/context/LanguageContext';
-import { getSupabase } from '@/lib/supabase';
+import { getFirebaseAuth } from '@/lib/firebase';
 import { cn } from '@/lib/cn';
 import { ADMIN_NAV_ITEMS } from './adminNav';
+import { AdminBrandMark } from './AdminBrandMark';
 import { AdminNavIcon } from './AdminNavIcons';
+import { printApprovedSalesReport } from './adminPrint';
+import { formatAdminFirestoreError } from './adminFirestoreError';
 
 export function AdminMenu({ open, onClose }) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const navigate = useNavigate();
+  const [printingSales, setPrintingSales] = useState(false);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -37,16 +41,32 @@ export function AdminMenu({ open, onClose }) {
 
   if (!open) return null;
 
+  async function handlePrintSales() {
+    setPrintingSales(true);
+    try {
+      await printApprovedSalesReport({ t, lang });
+      onClose();
+    } catch (err) {
+      window.alert(formatAdminFirestoreError(err, t));
+    } finally {
+      setPrintingSales(false);
+    }
+  }
+
   return (
     <div className="admin-menu-root" role="presentation">
       <button type="button" className="admin-menu-backdrop" aria-label={t('admin.menuClose')} onClick={onClose} />
       <nav className="admin-menu-drawer" aria-label={t('admin.menu')}>
         <div className="admin-menu-drawer-head">
-          <h2>{t('admin.menu')}</h2>
+          <AdminBrandMark compact />
           <button type="button" className="admin-menu-close" onClick={onClose} aria-label={t('admin.menuClose')}>
-            ×
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
+        <p className="admin-nav-section-label admin-nav-section-label--drawer">{t('admin.menuNav')}</p>
         <ul className="admin-menu-list">
           {ADMIN_NAV_ITEMS.map((item) => (
             <li key={item.key}>
@@ -63,6 +83,22 @@ export function AdminMenu({ open, onClose }) {
             </li>
           ))}
         </ul>
+        <p className="admin-nav-section-label admin-nav-section-label--drawer">{t('admin.menuTools')}</p>
+        <ul className="admin-menu-list admin-menu-list--actions">
+          <li>
+            <button
+              type="button"
+              className="admin-menu-item admin-menu-item--action"
+              disabled={printingSales}
+              onClick={handlePrintSales}
+            >
+              <span className="admin-menu-item-icon">
+                <AdminNavIcon type="print" />
+              </span>
+              {printingSales ? t('admin.loading') : t('admin.printSalesReport')}
+            </button>
+          </li>
+        </ul>
         <div className="admin-menu-footer">
           <a href="/" className="admin-menu-footer-link" onClick={onClose}>
             {t('admin.backToStore')}
@@ -72,7 +108,9 @@ export function AdminMenu({ open, onClose }) {
             className="admin-menu-footer-link admin-menu-footer-link--btn"
             onClick={async () => {
               onClose();
-              await getSupabase().auth.signOut();
+              const auth = await getFirebaseAuth();
+              const { signOut } = await import('firebase/auth');
+              await signOut(auth);
               navigate('/admin/login', { replace: true });
             }}
           >

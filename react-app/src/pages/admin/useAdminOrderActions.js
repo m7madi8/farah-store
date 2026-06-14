@@ -1,56 +1,21 @@
 import { useState } from 'react';
-import { getSupabase } from '@/lib/supabase';
+import { getAdminFirestore, getFirebaseAuth } from '@/lib/firebase';
+import { mapFirestoreOrder } from '@/lib/firestoreMappers';
+import { formatAdminFirestoreError } from './adminFirestoreError';
 
 function deleteErrorMessage(err, fallback) {
   if (!err) return fallback;
   if (typeof err === 'string') return err;
-  const parts = [err.message, err.details, err.hint].filter(Boolean);
+  const parts = [err.message, err.code].filter(Boolean);
   return parts.length ? parts.join(' — ') : fallback;
 }
 
-function isMissingRpcError(error) {
-  if (!error) return false;
-  const msg = `${error.message || ''} ${error.details || ''}`.toLowerCase();
-  return (
-    error.code === 'PGRST202' ||
-    error.code === '42883' ||
-    msg.includes('staff_delete_order') ||
-    msg.includes('could not find the function')
-  );
-}
-
-async function ensureStaffSession(sb, t) {
-  const { data: refreshData, error: refreshErr } = await sb.auth.refreshSession();
-  if (refreshErr) {
-    throw new Error(deleteErrorMessage(refreshErr, t('admin.deleteNotSignedIn')));
-  }
-  const session = refreshData.session ?? (await sb.auth.getSession()).data.session;
-  if (!session?.access_token) {
+async function ensureStaffSession(t) {
+  const auth = await getFirebaseAuth();
+  if (!auth.currentUser) {
     throw new Error(t('admin.deleteNotSignedIn'));
   }
-  return session;
-}
-
-async function deleteOrderViaRpc(sb, orderId) {
-  const { data, error } = await sb.rpc('staff_delete_order', { p_order_id: orderId });
-  if (error) {
-    if (isMissingRpcError(error)) {
-      return { status: 'missing_rpc', error };
-    }
-    throw error;
-  }
-  if (data === true) return { status: 'ok' };
-  if (data === false) return { status: 'not_found' };
-  return { status: 'unknown', data };
-}
-
-async function deleteOrderViaTable(sb, orderId) {
-  const { error: itemsErr } = await sb.from('order_items').delete({ count: 'exact' }).eq('order_id', orderId);
-  if (itemsErr) throw itemsErr;
-
-  const { error: delErr, count } = await sb.from('orders').delete({ count: 'exact' }).eq('id', orderId);
-  if (delErr) throw delErr;
-  return (count ?? 0) > 0;
+  return auth;
 }
 
 export function useAdminOrderActions({ setData, setError, t }) {
@@ -65,43 +30,17 @@ export function useAdminOrderActions({ setData, setError, t }) {
     setDeletingId(orderId);
     setError(null);
     try {
-      const sb = getSupabase();
-      await ensureStaffSession(sb, t);
-
-      const rpc = await deleteOrderViaRpc(sb, orderId);
-
-      if (rpc.status === 'ok') {
-        setData((prev) => prev.filter((o) => o.id !== orderId));
-        if (expandedId === orderId) setExpandedId(null);
-        setOrderToDelete(null);
-        return;
-      }
-
-      if (rpc.status === 'missing_rpc') {
-        const tableOk = await deleteOrderViaTable(sb, orderId);
-        if (tableOk) {
-          setData((prev) => prev.filter((o) => o.id !== orderId));
-          if (expandedId === orderId) setExpandedId(null);
-          setOrderToDelete(null);
-          return;
-        }
-        throw new Error(t('admin.deleteRpcMissing'));
-      }
-
-      if (rpc.status === 'not_found') {
-        throw new Error(t('admin.deleteNotFound'));
-      }
-
-      const tableOk = await deleteOrderViaTable(sb, orderId);
-      if (!tableOk) {
-        throw new Error(t('admin.deleteFailed'));
-      }
-
+      await ensureStaffSession(t);
+      const [{ deleteDoc, doc }, db] = await Promise.all([
+        import('firebase/firestore'),
+        getAdminFirestore(),
+      ]);
+      await deleteDoc(doc(db, 'orders', orderId));
       setData((prev) => prev.filter((o) => o.id !== orderId));
       if (expandedId === orderId) setExpandedId(null);
       setOrderToDelete(null);
     } catch (e) {
-      setError(new Error(deleteErrorMessage(e, t('admin.deleteFailed'))));
+      setError(new Error(formatAdminFirestoreError(e, t)));
     } finally {
       setDeletingId(null);
     }
@@ -111,18 +50,20 @@ export function useAdminOrderActions({ setData, setError, t }) {
     setApprovingId(order.id);
     setError(null);
     try {
-      const { data: updated, error: upErr } = await getSupabase()
-        .from('orders')
-        .update({ status: 'approved' })
-        .eq('id', order.id)
-        .select('*, order_items(*)')
-        .single();
-      if (upErr) throw upErr;
-      if (!updated) throw new Error(t('admin.approveFailed'));
+      await ensureStaffSession(t);
+      const [{ doc, getDoc, updateDoc }, db] = await Promise.all([
+        import('firebase/firestore'),
+        getAdminFirestore(),
+      ]);
+      const ref = doc(db, 'orders', order.id);
+      await updateDoc(ref, { status: 'approved' });
+      const snap = await getDoc(ref);
+      if (!snap.exists()) throw new Error(t('admin.approveFailed'));
+      const updated = mapFirestoreOrder(snap.id, snap.data());
       setData((prev) => prev.map((o) => (o.id === order.id ? updated : o)));
       setExpandedId(null);
     } catch (e) {
-      setError(e);
+      setError(new Error(formatAdminFirestoreError(e, t)));
     } finally {
       setApprovingId(null);
     }

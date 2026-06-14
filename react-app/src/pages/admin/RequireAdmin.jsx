@@ -2,7 +2,8 @@ import '@/styles/admin.css';
 import { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/context/LanguageContext';
-import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
+import { isFirebaseConfigured } from '@/lib/firebaseConfig';
+import { getFirebaseAuth } from '@/lib/firebase';
 
 /**
  * Protects /admin/* (except /admin/login). Redirects to login or home if misconfigured.
@@ -14,31 +15,32 @@ export function RequireAdmin() {
   const [session, setSession] = useState(null);
 
   useEffect(() => {
-    if (!isSupabaseConfigured()) {
+    if (!isFirebaseConfigured()) {
       navigate('/', { replace: true });
       return undefined;
     }
 
-    const sb = getSupabase();
+    let cancelled = false;
+    let unsubscribe = () => {};
 
-    sb.auth.getSession().then(({ data }) => {
-      const sess = data.session;
-      setSession(sess);
-      setReady(true);
-      if (!sess) navigate('/admin/login', { replace: true });
-    });
+    (async () => {
+      const auth = await getFirebaseAuth();
+      const { onAuthStateChanged } = await import('firebase/auth');
+      if (cancelled) return;
+      unsubscribe = onAuthStateChanged(auth, (user) => {
+        setSession(user);
+        setReady(true);
+        if (!user) navigate('/admin/login', { replace: true });
+      });
+    })();
 
-    const {
-      data: { subscription },
-    } = sb.auth.onAuthStateChange((_event, sess) => {
-      setSession(sess);
-      if (!sess) navigate('/admin/login', { replace: true });
-    });
-
-    return () => subscription.unsubscribe();
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
   }, [navigate]);
 
-  if (!isSupabaseConfigured()) return null;
+  if (!isFirebaseConfigured()) return null;
 
   if (!ready) {
     return (

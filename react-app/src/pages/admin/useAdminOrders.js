@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { getSupabase } from '@/lib/supabase';
+import { useLanguage } from '@/context/LanguageContext';
+import { getAdminFirestore } from '@/lib/firebase';
+import { mapFirestoreOrder } from '@/lib/firestoreMappers';
+import { formatAdminFirestoreError } from './adminFirestoreError';
 
 const POLL_MS = 30_000;
 
 export function useAdminOrders() {
+  const { t } = useLanguage();
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,34 +17,58 @@ export function useAdminOrders() {
     if (!silent) setIsLoading(true);
     setError(null);
     try {
-      const sb = getSupabase();
-      const { data: rows, error: qErr } = await sb
-        .from('orders')
-        .select('*, order_items(*)')
-        .order('created_at', { ascending: false });
-      if (qErr) throw qErr;
-      if (mountedRef.current) setData(rows ?? []);
+      const [{ collection, getDocs, orderBy, query }, db] = await Promise.all([
+        import('firebase/firestore'),
+        getAdminFirestore(),
+      ]);
+      const q = query(collection(db, 'orders'), orderBy('created_at', 'desc'));
+      const snap = await getDocs(q);
+      const rows = snap.docs.map((docSnap) => mapFirestoreOrder(docSnap.id, docSnap.data()));
+      if (mountedRef.current) setData(rows);
     } catch (e) {
-      if (mountedRef.current) setError(e);
+      if (mountedRef.current) setError(new Error(formatAdminFirestoreError(e, t)));
     } finally {
       if (mountedRef.current && !silent) setIsLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     mountedRef.current = true;
-    loadOrders();
+    let unsubscribe = () => {};
 
-    const sb = getSupabase();
-    const channel = sb
-      .channel('admin-orders-live')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
-        loadOrders({ silent: true });
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'order_items' }, () => {
-        loadOrders({ silent: true });
-      })
-      .subscribe();
+    async function subscribe() {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const [{ collection, onSnapshot, orderBy, query }, db] = await Promise.all([
+          import('firebase/firestore'),
+          getAdminFirestore(),
+        ]);
+        const q = query(collection(db, 'orders'), orderBy('created_at', 'desc'));
+        unsubscribe = onSnapshot(
+          q,
+          (snap) => {
+            if (!mountedRef.current) return;
+            const rows = snap.docs.map((docSnap) => mapFirestoreOrder(docSnap.id, docSnap.data()));
+            setData(rows);
+            setIsLoading(false);
+          },
+          (err) => {
+            if (mountedRef.current) {
+              setError(new Error(formatAdminFirestoreError(err, t)));
+              setIsLoading(false);
+            }
+          }
+        );
+      } catch (e) {
+        if (mountedRef.current) {
+          setError(new Error(formatAdminFirestoreError(e, t)));
+          setIsLoading(false);
+        }
+      }
+    }
+
+    subscribe();
 
     const pollId = window.setInterval(() => loadOrders({ silent: true }), POLL_MS);
 
@@ -53,9 +81,9 @@ export function useAdminOrders() {
       mountedRef.current = false;
       window.clearInterval(pollId);
       document.removeEventListener('visibilitychange', onVisible);
-      sb.removeChannel(channel);
+      unsubscribe();
     };
-  }, [loadOrders]);
+  }, [loadOrders, t]);
 
   return { data, setData, isLoading, error, setError, loadOrders };
 }

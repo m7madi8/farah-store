@@ -6,11 +6,11 @@ alwaysApply: true
 # Project Conventions — Nana's Bites / Chef Farah Ammar
 
 ## Stack
-- **Frontend**: React (Vite) in `react-app/`. Routes: Home (`/`), Product detail (`/product/:slug`), Checkout (`/checkout`), **Admin** (`/admin` — Supabase Auth + tables).
+- **Frontend**: React (Vite) in `react-app/`. Routes: Home (`/`), Product detail (`/product/:slug`), Checkout (`/checkout`), **Admin** (`/admin` — Firebase Auth + Firestore).
 - **Data**:
-  - **Supabase** (optional): `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`. Apply `react-app/supabase/schema.sql` and optional `seed.sql` in the Supabase SQL editor. Storefront loads `products`; checkout writes `orders` / `order_items`; staff uses `/admin/login`.
+  - **Firebase** (optional): `VITE_FIREBASE_*` vars. See `react-app/firebase/README.md`, `firestore.rules`, and `seed-products.json`. Storefront loads `products`; checkout writes `orders` with embedded `items[]`; staff uses `/admin/login`.
   - **REST** (optional): `VITE_API_BASE` for a custom API.
-  - **Mock**: if neither Supabase nor REST is set, built-in demo catalog + local checkout success.
+  - **Mock**: if neither Firebase nor REST is set, built-in demo catalog + local checkout success.
 
 ## i18n
 - UI is bilingual: **Arabic (ar)** and **English (en)**. Use `useLanguage()` and `t(key)` from `LanguageContext` and `translations.js`. Add new keys in both languages in `react-app/src/data/translations.js`.
@@ -22,7 +22,7 @@ alwaysApply: true
 
 ## Key paths
 - API: `react-app/src/services/api.js` (`fetchProducts`, `fetchProductBySlug`, `submitOrder`).
-- Supabase client: `react-app/src/lib/supabase.js`
+- Firebase client: `react-app/src/lib/firebase.js`, `firebaseConfig.js`
 - Admin: `react-app/src/pages/admin/` — UI primitives `react-app/src/components/ui/`
-- SQL: `react-app/supabase/schema.sql`, `react-app/supabase/seed.sql`
+- Firebase: `react-app/firebase/firestore.rules`, `react-app/firebase/seed-products.json`
 - Shop sections in `HomePage.jsx`: boxes, dateBalls (slug `date-balls-chocolate`), sauces, chopsticks. Category meta and section class names: `shop-category-boxes`, `shop-category-sauces`, etc.

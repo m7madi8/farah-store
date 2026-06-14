@@ -3,7 +3,7 @@
  * Submits order via API and clears cart on success; shows success toast and redirects.
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { OrderSummary } from '../components/OrderSummary';
@@ -22,6 +22,9 @@ export function CheckoutPage() {
   const { t, lang } = useLanguage();
   const { items, total, clearCart } = useCart();
   const [form, setForm] = useState({ name: '', phone: '', address: '', notes: '' });
+  const [location, setLocation] = useState(null);
+  const [locationStatus, setLocationStatus] = useState('idle');
+  const [locationError, setLocationError] = useState('');
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -42,6 +45,38 @@ export function CheckoutPage() {
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: null }));
   };
 
+  const handleShareLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError(t('checkout.locationUnsupported'));
+      setLocationStatus('error');
+      return;
+    }
+
+    setLocationStatus('loading');
+    setLocationError('');
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocation({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        });
+        setLocationStatus('success');
+      },
+      (err) => {
+        setLocationStatus('error');
+        if (err.code === err.PERMISSION_DENIED) {
+          setLocationError(t('checkout.locationDenied'));
+        } else if (err.code === err.TIMEOUT) {
+          setLocationError(t('checkout.locationTimeout'));
+        } else {
+          setLocationError(t('checkout.locationUnavailable'));
+        }
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (items.length === 0) return;
@@ -54,6 +89,7 @@ export function CheckoutPage() {
         address: form.address.trim(),
         notes: form.notes.trim(),
         paymentMethod: 'cod',
+        ...(location ? { location } : {}),
         items: items.map((i) => ({
           productId: i.productId,
           productSlug: i.productSlug,
@@ -149,6 +185,34 @@ export function CheckoutPage() {
                   placeholder={place.address}
                 />
                 {errors.address && <span className="checkout-error" role="alert">{errors.address}</span>}
+              </div>
+              <div className="checkout-field checkout-location-field">
+                <span className="checkout-label checkout-label-optional">{t('checkout.shareLocation')}</span>
+                <p className="checkout-location-hint">{t('checkout.shareLocationHint')}</p>
+                <button
+                  type="button"
+                  className={`btn-checkout-location${locationStatus === 'success' ? ' btn-checkout-location--shared' : ''}`}
+                  onClick={handleShareLocation}
+                  disabled={locationStatus === 'loading'}
+                >
+                  <BiIcon name="geo-alt" />
+                  <span>
+                    {locationStatus === 'loading'
+                      ? t('checkout.shareLocationLoading')
+                      : locationStatus === 'success'
+                        ? t('checkout.shareLocationAgain')
+                        : t('checkout.shareLocation')}
+                  </span>
+                </button>
+                {locationStatus === 'success' ? (
+                  <p className="checkout-location-success" role="status">
+                    <BiIcon name="check-circle-fill" />
+                    <span>{t('checkout.shareLocationSuccess')}</span>
+                  </p>
+                ) : null}
+                {locationError ? (
+                  <span className="checkout-error" role="alert">{locationError}</span>
+                ) : null}
               </div>
               <div className="checkout-field checkout-payment-notice" role="status">
                 <span className="checkout-label">{t('checkout.paymentMethod')}</span>

@@ -2,38 +2,32 @@
  * API service for Chef Farah Ammar store.
  *
  * Data source priority:
- * 1. Supabase — when VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY are set (see supabase/schema.sql).
+ * 1. Firebase — when VITE_FIREBASE_* vars are set (see firebase/README.md).
  * 2. REST — when VITE_API_BASE is set (legacy Django-style API).
  * 3. Mock — built-in demo catalog + local checkout success.
  */
 
-import { isSupabaseConfigured } from '@/lib/supabaseConfig';
+import { isFirebaseConfigured } from '@/lib/firebaseConfig';
+import { mapFirestoreProductRow } from '@/lib/firestoreMappers';
+import { siteConfig } from '@/config/env';
 import { MOCK_PRODUCTS } from './mockProducts';
 
-let supabaseModulePromise;
+let firebaseModulePromise;
 
-function loadSupabaseModule() {
-  if (!supabaseModulePromise) {
-    supabaseModulePromise = import('@/lib/supabase');
+function loadFirebaseModule() {
+  if (!firebaseModulePromise) {
+    firebaseModulePromise = import('@/lib/firebase');
   }
-  return supabaseModulePromise;
-}
-
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-function isValidUuid(value) {
-  return value != null && UUID_RE.test(String(value));
+  return firebaseModulePromise;
 }
 
 function apiBase() {
-  const raw = import.meta.env.VITE_API_BASE;
-  return raw != null && String(raw).trim() !== ''
-    ? String(raw).replace(/\/$/, '')
-    : '';
+  const raw = siteConfig.apiBase;
+  return raw ? raw.replace(/\/$/, '') : '';
 }
 
-/** Fail fast when Supabase/REST host is unreachable (avoids long DNS hangs). */
-const REMOTE_TIMEOUT_MS = 4000;
+/** Fail fast when Firebase/REST host is unreachable (avoids long DNS hangs). */
+const REMOTE_TIMEOUT_MS = 2500;
 
 function withTimeout(promise, ms, label = 'Request') {
   return new Promise((resolve, reject) => {
@@ -70,7 +64,7 @@ function localImageBySlug(slug) {
   const cleanSlug = String(slug).trim();
   if (!cleanSlug) return null;
   if (cleanSlug === 'date-balls-chocolate') {
-    return '/img/pro2.png';
+    return '/img/date-balls.webp';
   }
   if (cleanSlug === 'dumplings-meat') {
     return '/img/products/dumplings-chicken/dumplings-chicken.webp';
@@ -150,7 +144,7 @@ function mockDetailsForSlug(slug) {
   return mock?.details?.length ? mock.details : null;
 }
 
-/** Use catalog defaults when Supabase has empty or outdated ingredient lists. */
+/** Use catalog defaults when remote DB has empty or outdated ingredient lists. */
 function resolveProductDetails(slug, details) {
   const list = Array.isArray(details) ? details : [];
   const defaults = mockDetailsForSlug(slug);
@@ -186,7 +180,7 @@ function normalizeProduct(p) {
   return merged;
 }
 
-function mapSupabaseProductRow(row) {
+function mapRemoteProductRow(row) {
   return normalizeProduct({
     id: row.id,
     slug: row.slug,
@@ -206,23 +200,40 @@ function mapSupabaseProductRow(row) {
   });
 }
 
-async function fetchProductsFromSupabase() {
-  const { getSupabase } = await loadSupabaseModule();
-  const supabase = getSupabase();
-  const { data, error } = await supabase
-    .from('products')
-    .select('*')
-    .order('sort_order', { ascending: true });
-  if (error) throw error;
-  return (data || []).map(mapSupabaseProductRow);
+async function fetchProductsFromFirebase() {
+  const [{ getFirestoreDb }, { collection, getDocs, orderBy, query }] = await Promise.all([
+    loadFirebaseModule(),
+    import('firebase/firestore'),
+  ]);
+  const db = await getFirestoreDb();
+  const q = query(collection(db, 'products'), orderBy('sort_order', 'asc'));
+  const snap = await getDocs(q);
+  return snap.docs.map((docSnap) => mapRemoteProductRow(mapFirestoreProductRow(docSnap.id, docSnap.data())));
 }
 
-async function submitOrderSupabase(orderPayload) {
-  const { getSupabase } = await loadSupabaseModule();
-  const supabase = getSupabase();
-  const orderId = crypto.randomUUID();
-  const { error: orderErr } = await supabase.from('orders').insert({
-    id: orderId,
+async function submitOrderFirebase(orderPayload) {
+  const [{ getFirestoreDb }, { addDoc, collection, serverTimestamp }] = await Promise.all([
+    loadFirebaseModule(),
+    import('firebase/firestore'),
+  ]);
+  const db = await getFirestoreDb();
+  const items = (orderPayload.items || []).map((item) => ({
+    product_id: item.productId || null,
+    product_slug: item.productSlug || null,
+    product_name: item.name ?? '',
+    quantity: item.quantity || 1,
+    unit_price: item.price ?? 0,
+  }));
+
+  const locationFields =
+    orderPayload.location?.lat != null && orderPayload.location?.lng != null
+      ? {
+          location_lat: orderPayload.location.lat,
+          location_lng: orderPayload.location.lng,
+        }
+      : {};
+
+  const ref = await addDoc(collection(db, 'orders'), {
     customer_name: orderPayload.name,
     customer_phone: orderPayload.phone,
     shipping_address: orderPayload.address,
@@ -230,27 +241,14 @@ async function submitOrderSupabase(orderPayload) {
     payment_method: orderPayload.paymentMethod || 'cod',
     total: orderPayload.total ?? 0,
     status: 'pending',
+    created_at: serverTimestamp(),
+    items,
+    ...locationFields,
   });
-
-  if (orderErr) throw orderErr;
-
-  const lines = (orderPayload.items || []).map((item) => ({
-    order_id: orderId,
-    product_id: isValidUuid(item.productId) ? item.productId : null,
-    product_slug: item.productSlug || null,
-    quantity: item.quantity || 1,
-    unit_price: item.price ?? 0,
-    product_name: item.name ?? '',
-  }));
-
-  if (lines.length > 0) {
-    const { error: itemsErr } = await supabase.from('order_items').insert(lines);
-    if (itemsErr) throw itemsErr;
-  }
 
   return {
     ok: true,
-    orderId,
+    orderId: ref.id,
     message: 'Order saved.',
   };
 }
@@ -268,16 +266,16 @@ function mockProductsList() {
  * Fetch all products.
  */
 export async function fetchProducts() {
-  if (isSupabaseConfigured()) {
+  if (isFirebaseConfigured()) {
     try {
       const list = await withTimeout(
-        fetchProductsFromSupabase(),
+        fetchProductsFromFirebase(),
         REMOTE_TIMEOUT_MS,
-        'Supabase products'
+        'Firebase products'
       );
       if (Array.isArray(list) && list.length > 0) return list;
     } catch (err) {
-      console.warn('[fetchProducts] Supabase:', err);
+      console.warn('[fetchProducts] Firebase:', err);
     }
   }
 
@@ -295,20 +293,59 @@ export async function fetchProducts() {
   return mockProductsList();
 }
 
+/** Synchronous lookup — instant product detail paint (no network wait). */
+export function getProductBySlug(slug) {
+  if (!slug) return null;
+  const hit = MOCK_PRODUCTS.find((p) => p.slug === slug);
+  return hit ? normalizeProduct({ ...hit }) : null;
+}
+
 /**
  * Fetch single product by slug.
+ * Returns local catalog immediately when remote is unavailable; merges remote when ready.
  */
 export async function fetchProductBySlug(slug) {
-  const products = await fetchProducts();
-  return products.find((p) => p.slug === slug) || null;
+  const local = getProductBySlug(slug);
+
+  if (!isFirebaseConfigured() && !apiBase()) {
+    return local;
+  }
+
+  if (isFirebaseConfigured()) {
+    try {
+      const list = await withTimeout(
+        fetchProductsFromFirebase(),
+        REMOTE_TIMEOUT_MS,
+        'Firebase products'
+      );
+      const remote = Array.isArray(list) ? list.find((p) => p.slug === slug) : null;
+      if (remote) return remote;
+    } catch (err) {
+      console.warn('[fetchProductBySlug] Firebase:', err);
+    }
+  }
+
+  if (apiBase()) {
+    try {
+      const data = await withTimeout(request('/products/'), REMOTE_TIMEOUT_MS, 'REST products');
+      const raw = Array.isArray(data) ? data : (data?.results ?? data?.products ?? []);
+      const list = Array.isArray(raw) ? raw.map(normalizeProduct) : [];
+      const remote = list.find((p) => p.slug === slug);
+      if (remote) return remote;
+    } catch (_) {
+      /* fall through to local */
+    }
+  }
+
+  return local;
 }
 
 /**
  * Submit checkout order.
  */
 export async function submitOrder(orderPayload) {
-  if (isSupabaseConfigured()) {
-    return submitOrderSupabase(orderPayload);
+  if (isFirebaseConfigured()) {
+    return submitOrderFirebase(orderPayload);
   }
 
   if (!apiBase()) {
@@ -329,6 +366,12 @@ export async function submitOrder(orderPayload) {
       product: Number(item.productId ?? item.product),
       quantity: item.quantity || 1,
     })),
+    ...(orderPayload.location?.lat != null && orderPayload.location?.lng != null
+      ? {
+          location_lat: orderPayload.location.lat,
+          location_lng: orderPayload.location.lng,
+        }
+      : {}),
   };
   return request('/orders/', {
     method: 'POST',

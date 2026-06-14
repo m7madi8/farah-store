@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
 import { BiIcon } from './BiIcon';
+import { LangToggleIcon } from './LangToggleIcon';
 
 export function Navbar({ onCartClick, showCart = true, backToShop = false, alwaysShowBackground = false }) {
   const { t, lang, toggleLang } = useLanguage();
@@ -37,7 +38,7 @@ export function Navbar({ onCartClick, showCart = true, backToShop = false, alway
   }, [alwaysShowBackground]);
 
   return (
-    <nav ref={navRef} className="nav-minimal fixed-top anim-fade-down border-b border-white/10 backdrop-blur-md" id="nav">
+    <nav ref={navRef} className="nav-minimal fixed-top" id="nav">
       <div className="container-fluid px-4">
         <Link className="nav-brand drop-shadow-sm" to="/">
           {t('nav.brand')}
@@ -50,7 +51,7 @@ export function Navbar({ onCartClick, showCart = true, backToShop = false, alway
             aria-label={lang === 'ar' ? 'Switch to English' : 'Switch to Arabic'}
             title={lang === 'ar' ? 'English' : 'العربية'}
           >
-            <BiIcon name="translate" />
+            <LangToggleIcon lang={lang} />
           </button>
           {backToShop ? (
             <Link className="nav-order" to="/#product">

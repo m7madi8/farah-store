@@ -3,14 +3,16 @@
  * Mocks fetch; no real backend required.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fetchProducts, fetchProductBySlug, submitOrder } from './api';
+import { fetchProducts, fetchProductBySlug, getProductBySlug, submitOrder } from './api';
 
 describe('api', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.stubEnv('VITE_API_BASE', '');
-    vi.stubEnv('VITE_SUPABASE_URL', '');
-    vi.stubEnv('VITE_SUPABASE_ANON_KEY', '');
+    vi.stubEnv('VITE_FIREBASE_API_KEY', '');
+    vi.stubEnv('VITE_FIREBASE_AUTH_DOMAIN', '');
+    vi.stubEnv('VITE_FIREBASE_PROJECT_ID', '');
+    vi.stubEnv('VITE_FIREBASE_APP_ID', '');
   });
 
   describe('fetchProducts', () => {
@@ -49,6 +51,13 @@ describe('api', () => {
       } else {
         expect(product).toBeNull();
       }
+    });
+  });
+
+  describe('getProductBySlug', () => {
+    it('returns mock product synchronously', () => {
+      const product = getProductBySlug('dumplings-chicken');
+      expect(product?.slug).toBe('dumplings-chicken');
     });
   });
 

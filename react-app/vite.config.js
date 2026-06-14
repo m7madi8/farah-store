@@ -22,7 +22,7 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (!id.includes('node_modules')) return undefined;
-          if (id.includes('@supabase')) return 'vendor-supabase';
+          if (id.includes('firebase')) return 'vendor-firebase';
           if (id.includes('@tanstack')) return 'vendor-tanstack';
           if (id.includes('react-router')) return 'vendor-router';
           if (id.includes('react-dom') || id.includes('/react/')) return 'vendor-react';

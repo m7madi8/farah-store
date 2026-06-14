@@ -12,6 +12,7 @@ import { CartPanel } from '../components/CartPanel';
 import { CartToast } from '../components/CartToast';
 import { useLanguage } from '../context/LanguageContext';
 import { fetchProducts, getMockProducts } from '../services/api';
+import { siteConfig } from '../config/env';
 import { BiIcon } from '../components/BiIcon';
 
 export function HomePage({ onCartOpen, cartOpen, setCartOpen }) {
@@ -49,7 +50,12 @@ export function HomePage({ onCartOpen, cartOpen, setCartOpen }) {
   }, []);
 
   useEffect(() => {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const els = document.querySelectorAll('.anim-on-scroll');
+    if (reduceMotion) {
+      els.forEach((el) => el.classList.add('is-visible'));
+      return undefined;
+    }
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -59,7 +65,7 @@ export function HomePage({ onCartOpen, cartOpen, setCartOpen }) {
           }
         });
       },
-      { threshold: 0.12, rootMargin: '0px 0px -30px 0px' }
+      { threshold: 0.08, rootMargin: '0px 0px 40px 0px' }
     );
     els.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
@@ -297,10 +303,11 @@ export function HomePage({ onCartOpen, cartOpen, setCartOpen }) {
             <h2 className="order-title anim-on-scroll">{t('order.title')}</h2>
             <p className="order-sub anim-on-scroll">{t('order.sub')}</p>
             <a
-              href="https://wa.me/972501234567"
+              href={siteConfig.whatsappUrl || '#order'}
               className="btn-order btn-order-wa anim-on-scroll"
-              target="_blank"
-              rel="noopener noreferrer"
+              target={siteConfig.whatsappUrl ? '_blank' : undefined}
+              rel={siteConfig.whatsappUrl ? 'noopener noreferrer' : undefined}
+              aria-disabled={siteConfig.whatsappUrl ? undefined : true}
             >
               <BiIcon name="whatsapp" /> <span>{t('order.wa')}</span>
             </a>
