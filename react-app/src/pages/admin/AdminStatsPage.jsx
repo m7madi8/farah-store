@@ -3,7 +3,6 @@ import { useLanguage } from '@/context/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { AdminSalesStats } from './AdminSalesStats';
 import { printApprovedSalesReport } from './adminPrint';
-import { formatAdminFirestoreError } from './adminFirestoreError';
 import { isApprovedOrder } from './orderUtils';
 import { useAdminOrders } from './useAdminOrders';
 
@@ -17,8 +16,8 @@ export function AdminStatsPage() {
     setPrinting(true);
     try {
       await printApprovedSalesReport({ t, lang });
-    } catch (err) {
-      window.alert(formatAdminFirestoreError(err, t));
+    } catch {
+      window.alert(t('admin.pdfExportFailed'));
     } finally {
       setPrinting(false);
     }
@@ -39,7 +38,7 @@ export function AdminStatsPage() {
           disabled={printing || isLoading}
           onClick={handlePrint}
         >
-          {printing ? t('admin.loading') : t('admin.printSalesReport')}
+          {printing ? t('admin.exportingPdf') : t('admin.printSalesReport')}
         </Button>
       </header>
 

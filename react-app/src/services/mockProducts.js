@@ -16,8 +16,8 @@ export const MOCK_PRODUCTS = [
     descriptionAr: 'كرات تمر لذيذة مغطاة بالشوكولاته. حجمين متوفرين.',
     price: 25,
     category: 'boxes',
-    imageUrl: '/img/date-balls.webp',
-    heroImage: '/img/date-balls.webp',
+    imageUrl: '/img/pro2.png',
+    heroImage: '/img/pro2.png',
     order: 8,
     badge: 'Signature',
     details: [],
@@ -25,6 +25,6 @@ export const MOCK_PRODUCTS = [
       { key: '7', labelEn: '7 pieces', labelAr: '٧ حبات', price: 25 },
       { key: '16', labelEn: '16 pieces', labelAr: '١٦ حبة', price: 45 },
     ],
-    images: ['/img/date-balls.webp'],
+    images: ['/img/pro2.png'],
   },
 ];

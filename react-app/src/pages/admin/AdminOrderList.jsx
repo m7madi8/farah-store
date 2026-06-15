@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { AdminStatusBadge } from './AdminStatusBadge';
 import { printOrderInvoice } from './adminPrint';
@@ -52,6 +53,8 @@ function OrderCard({
   onApprove,
   deleting,
   approving,
+  exportingPdf,
+  onExportPdf,
   t,
   lang,
 }) {
@@ -165,9 +168,10 @@ function OrderCard({
           variant="outline"
           size="sm"
           className="admin-btn-print flex-1"
-          onClick={() => printOrderInvoice(order, { t, lang })}
+          disabled={exportingPdf}
+          onClick={onExportPdf}
         >
-          {t('admin.printInvoice')}
+          {exportingPdf ? t('admin.exportingPdf') : t('admin.printInvoice')}
         </Button>
         <Button
           type="button"
@@ -196,6 +200,8 @@ export function AdminOrderList({
   t,
   lang,
 }) {
+  const [exportingPdfId, setExportingPdfId] = useState(null);
+
   if (!orders.length) {
     return <p className="admin-section-empty">{emptyText}</p>;
   }
@@ -211,6 +217,17 @@ export function AdminOrderList({
             onApprove={isPendingOrder(order) ? () => onApprove(order) : undefined}
             deleting={deletingId === order.id}
             approving={approvingId === order.id}
+            exportingPdf={exportingPdfId === order.id}
+            onExportPdf={async () => {
+              setExportingPdfId(order.id);
+              try {
+                await printOrderInvoice(order, { t, lang });
+              } catch {
+                window.alert(t('admin.pdfExportFailed'));
+              } finally {
+                setExportingPdfId(null);
+              }
+            }}
             t={t}
             lang={lang}
           />

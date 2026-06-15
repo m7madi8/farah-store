@@ -64,7 +64,7 @@ function localImageBySlug(slug) {
   const cleanSlug = String(slug).trim();
   if (!cleanSlug) return null;
   if (cleanSlug === 'date-balls-chocolate') {
-    return '/img/date-balls.webp';
+    return '/img/pro2.png';
   }
   if (cleanSlug === 'dumplings-meat') {
     return '/img/products/dumplings-chicken/dumplings-chicken.webp';

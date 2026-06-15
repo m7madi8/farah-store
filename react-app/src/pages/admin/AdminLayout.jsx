@@ -11,7 +11,6 @@ import { AdminMenu } from './AdminMenu';
 import { AdminBrandMark } from './AdminBrandMark';
 import { AdminNavIcon } from './AdminNavIcons';
 import { printApprovedSalesReport } from './adminPrint';
-import { formatAdminFirestoreError } from './adminFirestoreError';
 
 const navClass = ({ isActive }) => cn('admin-nav-link', isActive && 'is-active');
 
@@ -39,8 +38,8 @@ export function AdminLayout() {
     setPrintingSales(true);
     try {
       await printApprovedSalesReport({ t, lang });
-    } catch (err) {
-      window.alert(formatAdminFirestoreError(err, t));
+    } catch {
+      window.alert(t('admin.pdfExportFailed'));
     } finally {
       setPrintingSales(false);
     }
@@ -72,7 +71,7 @@ export function AdminLayout() {
             onClick={handlePrintSales}
           >
             <AdminNavIcon type="print" />
-            {printingSales ? t('admin.loading') : t('admin.printSalesReport')}
+            {printingSales ? t('admin.exportingPdf') : t('admin.printSalesReport')}
           </Button>
           <Button type="button" variant="outline" size="sm" className="admin-btn-ghost" asChild>
             <a href="/">{t('admin.backToStore')}</a>

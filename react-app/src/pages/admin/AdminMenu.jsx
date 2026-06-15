@@ -7,7 +7,6 @@ import { ADMIN_NAV_ITEMS } from './adminNav';
 import { AdminBrandMark } from './AdminBrandMark';
 import { AdminNavIcon } from './AdminNavIcons';
 import { printApprovedSalesReport } from './adminPrint';
-import { formatAdminFirestoreError } from './adminFirestoreError';
 
 export function AdminMenu({ open, onClose }) {
   const { t, lang } = useLanguage();
@@ -46,8 +45,8 @@ export function AdminMenu({ open, onClose }) {
     try {
       await printApprovedSalesReport({ t, lang });
       onClose();
-    } catch (err) {
-      window.alert(formatAdminFirestoreError(err, t));
+    } catch {
+      window.alert(t('admin.pdfExportFailed'));
     } finally {
       setPrintingSales(false);
     }
@@ -95,7 +94,7 @@ export function AdminMenu({ open, onClose }) {
               <span className="admin-menu-item-icon">
                 <AdminNavIcon type="print" />
               </span>
-              {printingSales ? t('admin.loading') : t('admin.printSalesReport')}
+              {printingSales ? t('admin.exportingPdf') : t('admin.printSalesReport')}
             </button>
           </li>
         </ul>

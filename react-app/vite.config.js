@@ -22,6 +22,7 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (!id.includes('node_modules')) return undefined;
+          if (id.includes('html2canvas') || id.includes('jspdf')) return 'vendor-pdf';
           if (id.includes('firebase')) return 'vendor-firebase';
           if (id.includes('@tanstack')) return 'vendor-tanstack';
           if (id.includes('react-router')) return 'vendor-router';

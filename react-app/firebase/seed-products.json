@@ -120,8 +120,8 @@
       "description_ar": "كرات تمر لذيذة مغطاة بالشوكولاته.",
       "price": 25,
       "category": "boxes",
-      "image_url": "/img/date-balls.webp",
-      "hero_image": "/img/date-balls.webp",
+      "image_url": "/img/pro2.png",
+      "hero_image": "/img/pro2.png",
       "sort_order": 8,
       "badge": "Signature",
       "details": [],
@@ -129,7 +129,7 @@
         { "key": "7", "labelEn": "7 pieces", "labelAr": "٧ حبات", "price": 25 },
         { "key": "16", "labelEn": "16 pieces", "labelAr": "١٦ حبة", "price": 45 }
       ],
-      "images": ["/img/date-balls.webp"]
+      "images": ["/img/pro2.png"]
     }
   }
 }

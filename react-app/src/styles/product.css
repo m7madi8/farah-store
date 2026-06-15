@@ -124,30 +124,52 @@
 .product-hero-image img {
   width: auto;
   height: auto;
-  max-width: min(100%, 920px);
-  max-height: min(68vh, 820px);
+  max-width: min(100%, 1080px);
+  max-height: min(72vh, 900px);
   display: block;
   object-fit: contain;
   object-position: center top;
-  clip-path: inset(0 0 11% 0);
+  clip-path: inset(0 0 9% 0);
 }
 
 .product-hero-date-balls {
   overflow: hidden;
+  background: #4b2a63;
 }
 
 .product-hero-date-balls .product-hero-image {
-  padding: 0.5rem 0.75rem 0.75rem;
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: clamp(260px, 54vw, 680px);
+  margin-inline: auto;
+  padding: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.product-hero-date-balls .product-hero-image picture {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
 }
 
 .product-hero-date-balls .product-hero-image img {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: auto;
-  max-width: 100%;
+  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+  max-width: none;
   max-height: none;
   clip-path: none;
-  object-fit: contain;
-  object-position: center center;
+  object-fit: cover;
+  object-position: center 74%;
 }
 
 .product-hero-date-balls .product-hero-overlay {
@@ -438,25 +460,44 @@
     padding: 0.5rem 0.5rem 0.15rem;
   }
 
-  .product-hero-image img,
-  .product-hero-date-balls .product-hero-image img {
+  .product-hero-image img {
     width: 100%;
     height: auto;
     max-width: 100%;
     max-height: none;
-  }
-
-  .product-hero-image img {
     clip-path: inset(0 0 13% 0);
   }
 
+  .product-main-date-balls {
+    padding-top: 2.5rem;
+  }
+
+  .product-hero-date-balls .product-hero-image {
+    height: clamp(340px, 84vw, 580px);
+    max-width: 100%;
+    margin-top: -0.5rem;
+    padding: 0;
+  }
+
   .product-hero-date-balls .product-hero-image img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
     clip-path: none;
+    object-fit: cover;
+    object-position: center 60%;
+    transform: scale(1.12);
   }
 }
 
 @media (max-width: 575.98px) {
   .product-main { padding-top: 3rem; }
+  .product-main-date-balls {
+    padding-top: 2.15rem;
+  }
   .product-content::before {
     height: clamp(2.5rem, 10vw, 3.5rem);
     transform: translateY(-55%);
@@ -466,6 +507,14 @@
     padding: 1.75rem max(1.25rem, env(safe-area-inset-left)) max(3rem, env(safe-area-inset-bottom)) max(1.25rem, env(safe-area-inset-right));
   }
   .product-name { font-size: clamp(1.6rem, 6vw, 2.25rem); }
+  .product-hero-date-balls .product-hero-image {
+    height: clamp(320px, 92vw, 560px);
+    margin-top: -0.75rem;
+  }
+  .product-hero-date-balls .product-hero-image img {
+    object-position: center 56%;
+    transform: scale(1.18);
+  }
   .product-lead { font-size: 0.95rem; }
   .product-details { margin-bottom: 2rem; padding: 1.5rem 0; }
   .product-buy { padding: 1.5rem 0 0; }
@@ -480,7 +529,74 @@
     border-radius: 50% 50% 0 0 / 32% 32% 0 0;
   }
 
+  .product-hero-image {
+    padding: 1rem 2rem 0.5rem;
+    max-width: 1440px;
+    margin-inline: auto;
+  }
+
   .product-hero-image img {
-    max-height: calc(100vh - 6rem);
+    max-width: min(96vw, 1360px);
+    max-height: min(78vh, 1000px);
+    clip-path: inset(0 0 6% 0);
+  }
+
+  .product-hero-date-balls .product-hero-image {
+    width: 100%;
+    max-width: min(1180px, 92vw);
+    height: auto;
+    min-height: 0;
+    margin-inline: auto;
+    padding: 0.75rem 0 0.5rem;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .product-hero-date-balls .product-hero-image picture {
+    position: static;
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .product-hero-date-balls .product-hero-image img {
+    position: static;
+    display: block;
+    width: 100%;
+    height: auto;
+    min-width: 0;
+    min-height: 0;
+    max-width: 100%;
+    max-height: min(78vh, 820px);
+    clip-path: none;
+    object-fit: contain;
+    object-position: center center;
+    transform: none;
+  }
+
+  .product-content-inner {
+    max-width: 680px;
+    padding: 2.75rem 2rem 4.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .product-hero-image img {
+    max-width: min(94vw, 1440px);
+  }
+
+  .product-hero-date-balls .product-hero-image {
+    max-width: min(1280px, 90vw);
+    padding: 1rem 0 0.65rem;
+  }
+
+  .product-hero-date-balls .product-hero-image img {
+    max-height: min(82vh, 900px);
+  }
+
+  .product-content-inner {
+    max-width: 720px;
   }
 }
