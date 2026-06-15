@@ -3,12 +3,26 @@
  * Background: lightweight CSS gradient only (no WebGL).
  */
 
+import { useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { BiIcon } from './BiIcon';
 
 export function Hero() {
   const { t } = useLanguage();
   const tagline = t('hero.tagline');
+
+  useEffect(() => {
+    const hero = document.getElementById('hero');
+    if (!hero) return undefined;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        hero.classList.toggle('hero-paused', !entry.isIntersecting);
+      },
+      { threshold: 0 }
+    );
+    observer.observe(hero);
+    return () => observer.disconnect();
+  }, []);
 
   const scrollToShop = () => {
     document.getElementById('product')?.scrollIntoView({ behavior: 'smooth', block: 'start' });

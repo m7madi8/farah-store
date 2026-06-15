@@ -99,38 +99,57 @@ export function HomePage({ onCartOpen, cartOpen, setCartOpen }) {
       const container = ref.current;
       if (!container || itemCount <= 1) return undefined;
 
-      let ticking = false;
-      const onScroll = () => {
-        if (ticking) return;
-        ticking = true;
-        window.requestAnimationFrame(() => {
-          const rect = container.getBoundingClientRect();
-          const centerX = rect.left + rect.width / 2;
-          const children = Array.from(container.children);
-          if (!children.length) {
-            ticking = false;
-            return;
+      let lastIdx = 0;
+      let debounceId = 0;
+
+      const updateActive = () => {
+        const rect = container.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const children = Array.from(container.children);
+        if (!children.length) return;
+
+        let closestIdx = 0;
+        let closestDist = Number.POSITIVE_INFINITY;
+        children.forEach((child, idx) => {
+          const cRect = child.getBoundingClientRect();
+          const cCenter = cRect.left + cRect.width / 2;
+          const dist = Math.abs(cCenter - centerX);
+          if (dist < closestDist) {
+            closestDist = dist;
+            closestIdx = idx;
           }
-          let closestIdx = 0;
-          let closestDist = Number.POSITIVE_INFINITY;
-          children.forEach((child, idx) => {
-            const cRect = child.getBoundingClientRect();
-            const cCenter = cRect.left + cRect.width / 2;
-            const dist = Math.abs(cCenter - centerX);
-            if (dist < closestDist) {
-              closestDist = dist;
-              closestIdx = idx;
-            }
-          });
-          setActive(closestIdx);
-          ticking = false;
         });
+
+        if (closestIdx !== lastIdx) {
+          lastIdx = closestIdx;
+          setActive(closestIdx);
+        }
+      };
+
+      const onScroll = () => {
+        if (debounceId) return;
+        debounceId = window.setTimeout(() => {
+          debounceId = 0;
+          window.requestAnimationFrame(updateActive);
+        }, 60);
+      };
+
+      const onScrollEnd = () => {
+        if (debounceId) {
+          window.clearTimeout(debounceId);
+          debounceId = 0;
+        }
+        window.requestAnimationFrame(updateActive);
       };
 
       container.addEventListener('scroll', onScroll, { passive: true });
-      // Run once initially to set correct active index.
-      onScroll();
-      return () => container.removeEventListener('scroll', onScroll);
+      container.addEventListener('scrollend', onScrollEnd, { passive: true });
+      onScrollEnd();
+      return () => {
+        container.removeEventListener('scroll', onScroll);
+        container.removeEventListener('scrollend', onScrollEnd);
+        if (debounceId) window.clearTimeout(debounceId);
+      };
     };
 
     const detachBoxes = attachScrollHandler(boxesGridRef, groupedByCategory.boxes.length, setActiveBoxIndex);

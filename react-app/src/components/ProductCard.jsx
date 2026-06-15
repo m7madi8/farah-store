@@ -142,7 +142,7 @@ export function ProductCard({ product, onShowToast }) {
 
   return (
     <div
-      className="product-preview product-preview-card anim-on-scroll"
+      className="product-preview product-preview-card"
       data-category={product.category}
       data-price={product.price}
       data-order={product.order}
