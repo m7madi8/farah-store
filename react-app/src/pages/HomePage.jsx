@@ -3,7 +3,7 @@
  * Shop: products loaded once, displayed by order (no filter/sort UI).
  */
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Hero } from '../components/Hero';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
@@ -21,10 +21,6 @@ export function HomePage({ onCartOpen, cartOpen, setCartOpen }) {
   const [remoteChecked, setRemoteChecked] = useState(false);
   const [toastShow, setToastShow] = useState(false);
   const [CookieConsent, setCookieConsent] = useState(null);
-  const [activeBoxIndex, setActiveBoxIndex] = useState(0);
-  const [activeSauceIndex, setActiveSauceIndex] = useState(0);
-  const boxesGridRef = useRef(null);
-  const saucesGridRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -93,73 +89,6 @@ export function HomePage({ onCartOpen, cartOpen, setCartOpen }) {
     return groups;
   }, [shopList]);
 
-  // Track which card is centered in horizontal carousels (mobile) to highlight its step.
-  useEffect(() => {
-    const attachScrollHandler = (ref, itemCount, setActive) => {
-      const container = ref.current;
-      if (!container || itemCount <= 1) return undefined;
-
-      let lastIdx = 0;
-      let debounceId = 0;
-
-      const updateActive = () => {
-        const rect = container.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const children = Array.from(container.children);
-        if (!children.length) return;
-
-        let closestIdx = 0;
-        let closestDist = Number.POSITIVE_INFINITY;
-        children.forEach((child, idx) => {
-          const cRect = child.getBoundingClientRect();
-          const cCenter = cRect.left + cRect.width / 2;
-          const dist = Math.abs(cCenter - centerX);
-          if (dist < closestDist) {
-            closestDist = dist;
-            closestIdx = idx;
-          }
-        });
-
-        if (closestIdx !== lastIdx) {
-          lastIdx = closestIdx;
-          setActive(closestIdx);
-        }
-      };
-
-      const onScroll = () => {
-        if (debounceId) return;
-        debounceId = window.setTimeout(() => {
-          debounceId = 0;
-          window.requestAnimationFrame(updateActive);
-        }, 60);
-      };
-
-      const onScrollEnd = () => {
-        if (debounceId) {
-          window.clearTimeout(debounceId);
-          debounceId = 0;
-        }
-        window.requestAnimationFrame(updateActive);
-      };
-
-      container.addEventListener('scroll', onScroll, { passive: true });
-      container.addEventListener('scrollend', onScrollEnd, { passive: true });
-      onScrollEnd();
-      return () => {
-        container.removeEventListener('scroll', onScroll);
-        container.removeEventListener('scrollend', onScrollEnd);
-        if (debounceId) window.clearTimeout(debounceId);
-      };
-    };
-
-    const detachBoxes = attachScrollHandler(boxesGridRef, groupedByCategory.boxes.length, setActiveBoxIndex);
-    const detachSauces = attachScrollHandler(saucesGridRef, groupedByCategory.sauces.length, setActiveSauceIndex);
-    return () => {
-      detachBoxes && detachBoxes();
-      detachSauces && detachSauces();
-    };
-  }, [groupedByCategory.boxes.length, groupedByCategory.sauces.length]);
-
   const categoryMeta = {
     boxes: {
       title: lang === 'ar' ? 'بوكسات الدامبلنغ' : 'Dumpling boxes',
@@ -206,22 +135,7 @@ export function HomePage({ onCartOpen, cartOpen, setCartOpen }) {
                     <h3 className="shop-category-title">{categoryMeta.boxes.title}</h3>
                     <p className="shop-category-sub">{categoryMeta.boxes.sub}</p>
                   </header>
-                  {groupedByCategory.boxes.length > 1 && (
-                    <div className="shop-section-steps shop-section-steps-mobile">
-                      {groupedByCategory.boxes.map((_, idx) => (
-                        <div
-                          key={idx}
-                          className={`shop-step ${idx === activeBoxIndex ? 'shop-step--active' : ''}`}
-                        >
-                          <span className="shop-step-dot">{idx + 1}</span>
-                          {idx < groupedByCategory.boxes.length - 1 && (
-                            <span className="shop-step-line" />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <div className="shop-grid" ref={boxesGridRef}>
+                  <div className="shop-grid">
                     {groupedByCategory.boxes.map((product) => (
                       <ProductCard
                         key={product.id}
@@ -259,22 +173,7 @@ export function HomePage({ onCartOpen, cartOpen, setCartOpen }) {
                     <h3 className="shop-category-title">{categoryMeta.sauces.title}</h3>
                     <p className="shop-category-sub">{categoryMeta.sauces.sub}</p>
                   </header>
-                  {groupedByCategory.sauces.length > 1 && (
-                    <div className="shop-section-steps shop-section-steps-mobile">
-                      {groupedByCategory.sauces.map((_, idx) => (
-                        <div
-                          key={idx}
-                          className={`shop-step ${idx === activeSauceIndex ? 'shop-step--active' : ''}`}
-                        >
-                          <span className="shop-step-dot">{idx + 1}</span>
-                          {idx < groupedByCategory.sauces.length - 1 && (
-                            <span className="shop-step-line" />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <div className="shop-grid" ref={saucesGridRef}>
+                  <div className="shop-grid">
                     {groupedByCategory.sauces.map((product) => (
                       <ProductCard
                         key={product.id}

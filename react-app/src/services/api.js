@@ -343,12 +343,40 @@ export async function fetchProductBySlug(slug) {
 /**
  * Submit checkout order.
  */
+export function isOrderBackendConfigured() {
+  return isFirebaseConfigured() || !!apiBase();
+}
+
 export async function submitOrder(orderPayload) {
   if (isFirebaseConfigured()) {
     return submitOrderFirebase(orderPayload);
   }
 
-  if (!apiBase()) {
+  if (apiBase()) {
+    const backendPayload = {
+      customer_name: orderPayload.name,
+      customer_phone: orderPayload.phone,
+      shipping_address: orderPayload.address,
+      notes: orderPayload.notes || '',
+      payment_method: orderPayload.paymentMethod || 'cod',
+      items: (orderPayload.items || []).map((item) => ({
+        product: Number(item.productId ?? item.product),
+        quantity: item.quantity || 1,
+      })),
+      ...(orderPayload.location?.lat != null && orderPayload.location?.lng != null
+        ? {
+            location_lat: orderPayload.location.lat,
+            location_lng: orderPayload.location.lng,
+          }
+        : {}),
+    };
+    return request('/orders/', {
+      method: 'POST',
+      body: JSON.stringify(backendPayload),
+    });
+  }
+
+  if (import.meta.env.DEV) {
     return {
       ok: true,
       orderId: `local-${Date.now()}`,
@@ -356,26 +384,6 @@ export async function submitOrder(orderPayload) {
     };
   }
 
-  const backendPayload = {
-    customer_name: orderPayload.name,
-    customer_phone: orderPayload.phone,
-    shipping_address: orderPayload.address,
-    notes: orderPayload.notes || '',
-    payment_method: orderPayload.paymentMethod || 'cod',
-    items: (orderPayload.items || []).map((item) => ({
-      product: Number(item.productId ?? item.product),
-      quantity: item.quantity || 1,
-    })),
-    ...(orderPayload.location?.lat != null && orderPayload.location?.lng != null
-      ? {
-          location_lat: orderPayload.location.lat,
-          location_lng: orderPayload.location.lng,
-        }
-      : {}),
-  };
-  return request('/orders/', {
-    method: 'POST',
-    body: JSON.stringify(backendPayload),
-  });
+  throw new Error('Order backend is not configured.');
 }
 

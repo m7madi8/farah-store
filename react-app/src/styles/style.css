@@ -1168,7 +1168,6 @@ section[id] { scroll-margin-top: 0; }
   overflow: hidden;
   aspect-ratio: 4 / 6;
   background: linear-gradient(145deg, var(--soft-pink) 0%, rgba(122,92,142,0.15) 100%);
-  touch-action: manipulation;
 }
 
 .product-preview-image img {
@@ -1178,7 +1177,6 @@ section[id] { scroll-margin-top: 0; }
   object-fit: cover;
   object-position: center;
   transition: transform 0.5s ease;
-  touch-action: manipulation;
   pointer-events: none;
 }
 .product-preview-card .product-preview-image img {
@@ -1541,41 +1539,6 @@ section[id] { scroll-margin-top: 0; }
     max-width: 80vw;
   }
 
-  .shop-section-steps-mobile {
-    display: flex;
-  }
-
-  /* Dumpling boxes & Sauces — horizontal, centered cards */
-  .shop-category-boxes .shop-grid,
-  .shop-category-sauces .shop-grid {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    overflow-y: hidden;
-    gap: 1rem;
-    padding: 0.25rem 0 1.2rem;
-    padding-left: max(6vw, env(safe-area-inset-left));
-    padding-right: max(6vw, env(safe-area-inset-right));
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x mandatory;
-    scroll-padding-inline: 6vw;
-    scroll-behavior: auto;
-    touch-action: pan-x;
-  }
-
-  .shop-category-boxes .shop-grid::-webkit-scrollbar,
-  .shop-category-sauces .shop-grid::-webkit-scrollbar {
-    display: none;
-  }
-
-  .shop-category-boxes .product-preview,
-  .shop-category-sauces .product-preview {
-    flex: 0 0 82vw;
-    max-width: 82vw;
-    scroll-snap-align: start;
-    scroll-snap-stop: normal;
-  }
 }
 
 @media (min-width: 768px) {

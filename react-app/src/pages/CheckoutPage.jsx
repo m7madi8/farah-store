@@ -9,7 +9,7 @@ import { Navbar } from '../components/Navbar';
 import { OrderSummary } from '../components/OrderSummary';
 import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
-import { submitOrder } from '../services/api';
+import { submitOrder, isOrderBackendConfigured } from '../services/api';
 import { BiIcon } from '../components/BiIcon';
 
 const placeholders = {
@@ -30,6 +30,7 @@ export function CheckoutPage() {
   const [success, setSuccess] = useState(false);
 
   const place = placeholders[lang] || placeholders.en;
+  const ordersEnabled = isOrderBackendConfigured();
 
   const validate = () => {
     const e = {};
@@ -81,6 +82,10 @@ export function CheckoutPage() {
     e.preventDefault();
     if (items.length === 0) return;
     if (!validate()) return;
+    if (!ordersEnabled) {
+      setErrors({ submit: t('checkout.unavailable') });
+      return;
+    }
     setSubmitting(true);
     try {
       await submitOrder({
@@ -231,10 +236,13 @@ export function CheckoutPage() {
                 />
               </div>
               {errors.submit && <p className="checkout-error" role="alert">{errors.submit}</p>}
+              {!ordersEnabled && !errors.submit ? (
+                <p className="checkout-error" role="alert">{t('checkout.unavailable')}</p>
+              ) : null}
               <button
                 type="submit"
                 className="btn-checkout-submit ui-btn-primary"
-                disabled={submitting}
+                disabled={submitting || !ordersEnabled}
               >
                 {submitting ? (lang === 'ar' ? 'جاري الإرسال...' : 'Sending...') : t('checkout.confirm')}
               </button>
