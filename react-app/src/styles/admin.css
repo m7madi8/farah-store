@@ -1025,6 +1025,103 @@
   width: 100%;
 }
 
+.admin-order-discount-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(46, 125, 50, 0.12);
+  color: #2e7d32;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+  white-space: nowrap;
+}
+
+.admin-order-pricing {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-order-pricing--compact {
+  margin-top: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.75rem;
+  background: rgba(46, 125, 50, 0.06);
+  border: 1px solid rgba(46, 125, 50, 0.15);
+}
+
+.admin-order-pricing-code {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.5rem;
+}
+
+.admin-order-pricing-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+}
+
+.admin-order-pricing-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.admin-order-pricing-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.8125rem;
+  color: hsl(var(--foreground));
+}
+
+.admin-order-pricing-row--discount {
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+.admin-order-pricing-row--final {
+  padding-top: 0.35rem;
+  border-top: 1px dashed hsl(var(--border));
+  font-weight: 700;
+}
+
+.admin-order-price-before {
+  color: hsl(var(--muted-foreground));
+  text-decoration: line-through;
+  font-weight: 600;
+}
+
+.admin-order-price-after {
+  color: hsl(var(--primary));
+  font-weight: 700;
+}
+
+.admin-order-side-pricing {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+}
+
+.admin-order-side-pricing .admin-order-price-before {
+  font-size: 0.78rem;
+}
+
+.admin-order-side-pricing .admin-order-total {
+  font-size: 1rem;
+}
+
+.admin-order-card-side--compact {
+  align-self: center;
+}
+
 .admin-order-card-head--compact .admin-order-name {
   font-size: 1.125rem;
 }

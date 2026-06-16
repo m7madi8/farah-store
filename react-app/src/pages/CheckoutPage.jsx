@@ -10,6 +10,7 @@ import { OrderSummary } from '../components/OrderSummary';
 import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
 import { submitOrder, isOrderBackendConfigured } from '../services/api';
+import { calculateOrderDiscount } from '../lib/discountCodes';
 import { BiIcon } from '../components/BiIcon';
 
 const placeholders = {
@@ -21,7 +22,7 @@ export function CheckoutPage() {
   const navigate = useNavigate();
   const { t, lang } = useLanguage();
   const { items, total, clearCart } = useCart();
-  const [form, setForm] = useState({ name: '', phone: '', address: '', notes: '' });
+  const [form, setForm] = useState({ name: '', phone: '', address: '', notes: '', discountCode: '' });
   const [location, setLocation] = useState(null);
   const [locationStatus, setLocationStatus] = useState('idle');
   const [locationError, setLocationError] = useState('');
@@ -31,12 +32,16 @@ export function CheckoutPage() {
 
   const place = placeholders[lang] || placeholders.en;
   const ordersEnabled = isOrderBackendConfigured();
+  const discountPricing = calculateOrderDiscount(total, form.discountCode);
 
   const validate = () => {
     const e = {};
     if (!form.name.trim()) e.name = t('checkout.name');
     if (!form.phone.trim()) e.phone = t('checkout.phone');
     if (!form.address.trim()) e.address = t('checkout.address');
+    if (form.discountCode.trim() && !discountPricing.isValid) {
+      e.discountCode = t('checkout.discountInvalid');
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -102,7 +107,11 @@ export function CheckoutPage() {
           price: i.price,
           quantity: i.quantity || 1,
         })),
-        total,
+        subtotal: discountPricing.subtotal,
+        discountCode: discountPricing.isValid ? discountPricing.code : '',
+        discountPercent: discountPricing.isValid ? discountPricing.percent : 0,
+        discountAmount: discountPricing.isValid ? discountPricing.amount : 0,
+        total: discountPricing.total,
       });
       clearCart();
       setSuccess(true);
@@ -144,7 +153,13 @@ export function CheckoutPage() {
             <p className="checkout-sub">{t('checkout.sub')}</p>
           </header>
           <div className="checkout-content">
-            <OrderSummary items={items} total={total} />
+            <OrderSummary
+              items={items}
+              total={total}
+              discountCode={form.discountCode}
+              onDiscountCodeChange={(value) => handleChange('discountCode', value)}
+              discountError={errors.discountCode}
+            />
             <form className="checkout-form ui-card" onSubmit={handleSubmit} noValidate>
               <h2 className="checkout-form-title">{t('checkout.yourDetails')}</h2>
               <div className="checkout-field">

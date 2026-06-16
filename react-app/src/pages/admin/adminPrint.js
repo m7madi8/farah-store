@@ -252,6 +252,14 @@ function printStyles(variant = 'full') {
       padding-top: ${compact ? '8px' : '12px'};
       border-top: ${compact ? '2px solid #4b2a63' : '2px solid #4a3862'};
     }
+    .print-total--minor {
+      font-size: ${compact ? '0.78rem' : '0.92rem'};
+      font-weight: 600;
+      margin-top: ${compact ? '4px' : '8px'};
+      padding-top: ${compact ? '4px' : '6px'};
+      border-top: 1px dashed #ddd;
+    }
+    .print-total--discount span:last-child { color: #2e7d32; }
     .print-summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
     .print-summary-card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; text-align: center; }
     .print-summary-card small { display: block; color: #666; margin-bottom: 4px; }
@@ -311,6 +319,7 @@ function buildCompactInvoiceHtml(order, { t, lang }) {
         ${receiptRow(t('admin.colDate'), formatWhen(order.created_at, lang))}
         ${receiptRow(t('admin.colStatus'), statusLabel(order.status, t))}
         ${receiptRow(t('admin.paymentMethod'), payment)}
+        ${order.discount_code ? receiptRow(t('admin.colDiscountCode'), order.discount_code, { ltr: true }) : ''}
       </section>
 
       <section class="receipt-block">
@@ -332,6 +341,16 @@ function buildCompactInvoiceHtml(order, { t, lang }) {
         ${itemRows || `<div class="receipt-item"><span class="receipt-item-name">${escapeHtml(t('admin.statsNoData'))}</span><span></span><span></span></div>`}
       </section>
 
+      ${order.discount_code ? `
+        <div class="print-total print-total--minor">
+          <span>${escapeHtml(t('admin.colSubtotal'))}</span>
+          <span>${formatMoney(order.subtotal)}</span>
+        </div>
+        <div class="print-total print-total--minor print-total--discount">
+          <span>${escapeHtml(t('admin.colDiscount'))} (${escapeHtml(order.discount_code)} −${order.discount_percent}%)</span>
+          <span>−${formatMoney(order.discount_amount)}</span>
+        </div>
+      ` : ''}
       <div class="print-total">
         <span>${escapeHtml(t('admin.colTotal'))}</span>
         <span>${formatMoney(order.total)}</span>

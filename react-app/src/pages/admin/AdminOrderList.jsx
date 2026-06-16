@@ -27,6 +27,45 @@ function statusLabel(status, t) {
   return t(`admin.status.${key}`);
 }
 
+function formatPrice(amount) {
+  return `₪ ${Number(amount || 0).toFixed(2)}`;
+}
+
+function OrderDiscountPricing({ order, t, compact = false }) {
+  if (!order.discount_code) return null;
+
+  const subtotal = Number(order.subtotal ?? order.total ?? 0);
+  const total = Number(order.total || 0);
+  const discountAmount = Number(order.discount_amount || 0);
+
+  return (
+    <div className={`admin-order-pricing${compact ? ' admin-order-pricing--compact' : ''}`}>
+      <div className="admin-order-pricing-code">
+        <span className="admin-order-pricing-label">{t('admin.orderDiscountUsed')}</span>
+        <span className="admin-order-discount-badge">
+          {order.discount_code} −{order.discount_percent}%
+        </span>
+      </div>
+      <div className="admin-order-pricing-rows">
+        <div className="admin-order-pricing-row">
+          <span>{t('admin.colPriceBeforeDiscount')}</span>
+          <span className="admin-order-price-before">{formatPrice(subtotal)}</span>
+        </div>
+        {discountAmount > 0 ? (
+          <div className="admin-order-pricing-row admin-order-pricing-row--discount">
+            <span>{t('admin.colDiscount')}</span>
+            <span>−{formatPrice(discountAmount)}</span>
+          </div>
+        ) : null}
+        <div className="admin-order-pricing-row admin-order-pricing-row--final">
+          <span>{t('admin.colPriceAfterDiscount')}</span>
+          <span className="admin-order-price-after">{formatPrice(total)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function OrderDetailRow({ label, value, href }) {
   if (value == null || value === '') return null;
   return (
@@ -67,6 +106,8 @@ function OrderCard({
   const mapsDirectionsUrl = hasLocation
     ? googleMapsDirectionsUrl(order.location_lat, order.location_lng)
     : null;
+  const hasDiscount = Boolean(order.discount_code);
+  const orderTotal = Number(order.total || 0);
 
   return (
     <article className={`admin-order-card${expanded ? ' is-expanded' : ''}${pending ? ' admin-order-card--pending' : ' admin-order-card--approved'}`}>
@@ -78,11 +119,23 @@ function OrderCard({
               {formatWhen(order.created_at, lang)}
             </time>
           </div>
+          {!expanded && hasDiscount ? <OrderDiscountPricing order={order} t={t} compact /> : null}
         </div>
         {expanded ? (
           <div className="admin-order-card-side">
-            <span className="admin-order-total">₪ {Number(order.total || 0).toFixed(2)}</span>
+            {hasDiscount ? (
+              <div className="admin-order-side-pricing">
+                <span className="admin-order-price-before">{formatPrice(order.subtotal ?? orderTotal)}</span>
+                <span className="admin-order-total">{formatPrice(orderTotal)}</span>
+              </div>
+            ) : (
+              <span className="admin-order-total">{formatPrice(orderTotal)}</span>
+            )}
             <AdminStatusBadge status={order.status} label={statusLabel(order.status, t)} />
+          </div>
+        ) : !hasDiscount ? (
+          <div className="admin-order-card-side admin-order-card-side--compact">
+            <span className="admin-order-total">{formatPrice(orderTotal)}</span>
           </div>
         ) : null}
       </div>
@@ -110,7 +163,16 @@ function OrderCard({
               href={mapsViewUrl}
             />
           ) : null}
-          <OrderDetailRow label={t('admin.colTotal')} value={`₪ ${Number(order.total || 0).toFixed(2)}`} />
+          {hasDiscount ? (
+            <div className="admin-order-detail-row admin-order-detail-row--block">
+              <dt>{t('admin.colDiscountCode')}</dt>
+              <dd>
+                <OrderDiscountPricing order={order} t={t} />
+              </dd>
+            </div>
+          ) : (
+            <OrderDetailRow label={t('admin.colTotal')} value={formatPrice(orderTotal)} />
+          )}
           <OrderDetailRow label={t('admin.colStatus')} value={statusLabel(order.status, t)} />
           {order.notes ? <OrderDetailRow label={t('admin.colNotes')} value={order.notes} /> : null}
           <OrderDetailRow label={t('admin.paymentMethod')} value={order.payment_method === 'cod' ? t('admin.paymentCod') : order.payment_method} />
