@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { useLanguage } from '@/context/LanguageContext';
+import { useAdminLanguage } from '@/context/LanguageContext';
 import { getFirebaseAuth } from '@/lib/firebase';
 import { cn } from '@/lib/cn';
 import { ADMIN_NAV_ITEMS } from './adminNav';
@@ -9,7 +9,7 @@ import { AdminNavIcon } from './AdminNavIcons';
 import { printApprovedSalesReport } from './adminPrint';
 
 export function AdminMenu({ open, onClose }) {
-  const { t, lang } = useLanguage();
+  const { t, lang } = useAdminLanguage();
   const navigate = useNavigate();
   const [printingSales, setPrintingSales] = useState(false);
 

@@ -1,7 +1,7 @@
 import '@/styles/admin.css';
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { useLanguage } from '@/context/LanguageContext';
+import { useAdminLanguage } from '@/context/LanguageContext';
 import { getFirebaseAuth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/cn';
@@ -15,7 +15,7 @@ import { printApprovedSalesReport } from './adminPrint';
 const navClass = ({ isActive }) => cn('admin-nav-link', isActive && 'is-active');
 
 export function AdminLayout() {
-  const { t, lang } = useLanguage();
+  const { t, lang } = useAdminLanguage();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [printingSales, setPrintingSales] = useState(false);

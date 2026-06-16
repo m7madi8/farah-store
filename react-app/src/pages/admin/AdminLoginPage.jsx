@@ -1,7 +1,7 @@
 import '@/styles/admin.css';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useLanguage } from '@/context/LanguageContext';
+import { useAdminLanguage } from '@/context/LanguageContext';
 import { isFirebaseConfigured } from '@/lib/firebaseConfig';
 import { getFirebaseAuth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,7 @@ function loginErrorMessage(err, t) {
 }
 
 export function AdminLoginPage() {
-  const { t } = useLanguage();
+  const { t } = useAdminLanguage();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

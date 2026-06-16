@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useLanguage } from '@/context/LanguageContext';
+import { useAdminLanguage } from '@/context/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { AdminSalesStats } from './AdminSalesStats';
 import { printApprovedSalesReport } from './adminPrint';
@@ -7,7 +7,7 @@ import { isApprovedOrder } from './orderUtils';
 import { useAdminOrders } from './useAdminOrders';
 
 export function AdminStatsPage() {
-  const { t, lang } = useLanguage();
+  const { t, lang } = useAdminLanguage();
   const { data, isLoading, error } = useAdminOrders();
   const [printing, setPrinting] = useState(false);
   const approvedOrders = useMemo(() => data.filter(isApprovedOrder), [data]);

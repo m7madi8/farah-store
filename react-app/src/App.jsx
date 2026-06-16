@@ -36,6 +36,9 @@ const AdminStatsPage = lazy(() =>
 const AdminProductsPage = lazy(() =>
   import('./pages/admin/AdminProductsPage').then((m) => ({ default: m.AdminProductsPage }))
 );
+const AdminLanguageScope = lazy(() =>
+  import('./pages/admin/AdminLanguageScope').then((m) => ({ default: m.AdminLanguageScope }))
+);
 
 function AppRoutes() {
   const location = useLocation();
@@ -63,9 +66,22 @@ function AppRoutes() {
         />
         <Route path="/checkout" element={<CheckoutPage />} />
 
-        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route
+          path="/admin/login"
+          element={
+            <AdminLanguageScope>
+              <AdminLoginPage />
+            </AdminLanguageScope>
+          }
+        />
         <Route path="/admin" element={<RequireAdmin />}>
-          <Route element={<AdminLayout />}>
+          <Route
+            element={
+              <AdminLanguageScope>
+                <AdminLayout />
+              </AdminLanguageScope>
+            }
+          >
             <Route index element={<Navigate to="pending" replace />} />
             <Route path="orders" element={<Navigate to="/admin/pending" replace />} />
             <Route path="pending" element={<AdminPendingPage />} />

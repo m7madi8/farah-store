@@ -1,7 +1,7 @@
-import { useLanguage } from '@/context/LanguageContext';
+import { useAdminLanguage } from '@/context/LanguageContext';
 
 export function AdminHeader({ onMenuOpen }) {
-  const { t } = useLanguage();
+  const { t } = useAdminLanguage();
 
   return (
     <header className="admin-topbar">

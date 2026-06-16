@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useLanguage } from '@/context/LanguageContext';
+import { useAdminLanguage } from '@/context/LanguageContext';
 import { computeProductSalesStats, formatMoney } from './salesStats';
 
 function HighlightProduct({ label, product, qtyLabel, t }) {
@@ -23,7 +23,7 @@ function HighlightProduct({ label, product, qtyLabel, t }) {
 }
 
 export function AdminSalesStats({ approvedOrders, showHeader = true }) {
-  const { t } = useLanguage();
+  const { t } = useAdminLanguage();
 
   const sales = useMemo(() => computeProductSalesStats(approvedOrders), [approvedOrders]);
 

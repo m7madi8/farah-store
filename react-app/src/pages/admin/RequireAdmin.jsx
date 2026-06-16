@@ -1,7 +1,7 @@
 import '@/styles/admin.css';
 import { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { useLanguage } from '@/context/LanguageContext';
+import { useAdminLanguage } from '@/context/LanguageContext';
 import { isFirebaseConfigured } from '@/lib/firebaseConfig';
 import { getFirebaseAuth } from '@/lib/firebase';
 
@@ -10,7 +10,7 @@ import { getFirebaseAuth } from '@/lib/firebase';
  */
 export function RequireAdmin() {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t } = useAdminLanguage();
   const [ready, setReady] = useState(false);
   const [session, setSession] = useState(null);
 

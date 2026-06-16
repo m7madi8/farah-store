@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useLanguage } from '@/context/LanguageContext';
+import { useAdminLanguage } from '@/context/LanguageContext';
 import { getAdminFirestore } from '@/lib/firebase';
 import { mapFirestoreOrder } from '@/lib/firestoreMappers';
 import { formatAdminFirestoreError } from './adminFirestoreError';
@@ -7,7 +7,7 @@ import { formatAdminFirestoreError } from './adminFirestoreError';
 const POLL_MS = 30_000;
 
 export function useAdminOrders() {
-  const { t } = useLanguage();
+  const { t } = useAdminLanguage();
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);

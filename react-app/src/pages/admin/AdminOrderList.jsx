@@ -92,8 +92,8 @@ function OrderCard({
   onApprove,
   deleting,
   approving,
-  exportingPdf,
-  onExportPdf,
+  exportingImage,
+  onExportImage,
   t,
   lang,
 }) {
@@ -198,31 +198,23 @@ function OrderCard({
 
       <div className="admin-order-actions">
         {hasLocation ? (
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="admin-btn-map flex-1"
-              asChild
+          <Button
+            type="button"
+            size="sm"
+            className="admin-btn-directions flex-1"
+            asChild
+          >
+            <a
+              href={mapsDirectionsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="admin-order-action-link"
             >
-              <a href={mapsViewUrl} target="_blank" rel="noopener noreferrer">
-                {t('admin.viewLocation')}
-              </a>
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              className="admin-btn-directions flex-1"
-              asChild
-            >
-              <a href={mapsDirectionsUrl} target="_blank" rel="noopener noreferrer">
-                {t('admin.getDirections')}
-              </a>
-            </Button>
-          </>
+              {t('admin.getDirections')}
+            </a>
+          </Button>
         ) : null}
-        <Button type="button" variant="outline" size="sm" className="flex-1" onClick={onToggle}>
+        <Button type="button" variant="outline" size="sm" className="admin-btn-toggle flex-1" onClick={onToggle}>
           {expanded ? t('admin.hideOrder') : t('admin.viewOrder')}
         </Button>
         <Button
@@ -230,16 +222,16 @@ function OrderCard({
           variant="outline"
           size="sm"
           className="admin-btn-print flex-1"
-          disabled={exportingPdf}
-          onClick={onExportPdf}
+          disabled={exportingImage}
+          onClick={onExportImage}
         >
-          {exportingPdf ? t('admin.exportingPdf') : t('admin.printInvoice')}
+          {exportingImage ? t('admin.exportingImage') : t('admin.printInvoice')}
         </Button>
         <Button
           type="button"
           variant="destructive"
           size="sm"
-          className="flex-1"
+          className="admin-btn-delete flex-1"
           disabled={deleting}
           onClick={onDelete}
         >
@@ -262,7 +254,7 @@ export function AdminOrderList({
   t,
   lang,
 }) {
-  const [exportingPdfId, setExportingPdfId] = useState(null);
+  const [exportingImageId, setExportingImageId] = useState(null);
 
   if (!orders.length) {
     return <p className="admin-section-empty">{emptyText}</p>;
@@ -279,15 +271,15 @@ export function AdminOrderList({
             onApprove={isPendingOrder(order) ? () => onApprove(order) : undefined}
             deleting={deletingId === order.id}
             approving={approvingId === order.id}
-            exportingPdf={exportingPdfId === order.id}
-            onExportPdf={async () => {
-              setExportingPdfId(order.id);
+            exportingImage={exportingImageId === order.id}
+            onExportImage={async () => {
+              setExportingImageId(order.id);
               try {
-                await printOrderInvoice(order, { t, lang });
+                await printOrderInvoice(order);
               } catch {
-                window.alert(t('admin.pdfExportFailed'));
+                window.alert(t('admin.imageExportFailed'));
               } finally {
-                setExportingPdfId(null);
+                setExportingImageId(null);
               }
             }}
             t={t}

@@ -1,8 +1,8 @@
-import { useLanguage } from '@/context/LanguageContext';
+import { useAdminLanguage } from '@/context/LanguageContext';
 import { cn } from '@/lib/cn';
 
 export function AdminBrandMark({ compact = false, as = 'div' }) {
-  const { t } = useLanguage();
+  const { t } = useAdminLanguage();
   const Tag = as;
 
   return (

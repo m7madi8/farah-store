@@ -37,6 +37,7 @@ export function mapFirestoreOrder(id, data) {
       product_id: item.product_id ?? null,
       product_slug: item.product_slug ?? null,
       product_name: item.product_name ?? '',
+      variant_key: item.variant_key ?? null,
       quantity: Number(item.quantity) || 0,
       unit_price: Number(item.unit_price) || 0,
     })),

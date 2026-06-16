@@ -1,10 +1,13 @@
 import { getAdminFirestore } from '@/lib/firebase';
 import { mapFirestoreOrder } from '@/lib/firestoreMappers';
+import { translations } from '@/data/translations';
 import { computeProductSalesStats, formatMoney } from './salesStats';
 import { isApprovedOrder, normalizeOrderStatus } from './orderUtils';
 import { formatCoordinates, hasValidLocation } from '@/lib/googleMaps';
 
 const STORE_LOGO_PATH = '/img/logo.webp';
+const INVOICE_LANG = 'en';
+const invoiceT = (key) => translations.en[key] ?? key;
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -39,12 +42,15 @@ function printStyles(variant = 'full') {
       font-size: 11px;
       line-height: 1.4;
       background: #fff;
+      direction: ltr;
+      text-align: left;
     }
     .print-sheet--compact {
       width: 100%;
       max-width: 302px;
       padding: 14px 12px 16px;
       background: #fff;
+      direction: ltr;
     }
     .print-header {
       margin-bottom: 10px;
@@ -284,7 +290,103 @@ function receiptRow(label, value, { ltr = false } = {}) {
   `;
 }
 
-function buildCompactInvoiceHtml(order, { t, lang }) {
+function formatInvoiceWhen(iso) {
+  if (!iso) return '—';
+  try {
+    return new Date(iso).toLocaleString('en-GB', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
+  } catch {
+    return String(iso);
+  }
+}
+
+function stripVariantSuffix(name) {
+  return String(name || '').replace(/\s*\([^)]*\)\s*$/, '').trim();
+}
+
+function findCatalogProduct(item, bySlug, byId, catalog) {
+  if (item.product_slug && bySlug.has(item.product_slug)) return bySlug.get(item.product_slug);
+  if (item.product_id && byId.has(item.product_id)) return byId.get(item.product_id);
+
+  const stored = String(item.product_name || '').trim();
+  if (!stored) return null;
+
+  const baseStored = stripVariantSuffix(stored);
+  return (
+    catalog.find((product) => product.name === stored || product.name_ar === stored) ||
+    catalog.find((product) => product.name === baseStored || product.name_ar === baseStored) ||
+    null
+  );
+}
+
+function findVariantForItem(item, variants = []) {
+  if (!variants.length) return null;
+
+  const byKey = item.variant_key
+    ? variants.find((variant) => String(variant.key) === String(item.variant_key))
+    : null;
+  if (byKey) return byKey;
+
+  const unitPrice = Number(item.unit_price) || 0;
+  const byPrice = variants.find((variant) => Number(variant.price) === unitPrice);
+  if (byPrice) return byPrice;
+
+  const stored = String(item.product_name || '');
+  const match = stored.match(/\(([^)]+)\)\s*$/);
+  if (!match) return null;
+
+  const label = match[1].trim();
+  return (
+    variants.find((variant) => variant.labelEn === label || variant.labelAr === label) || null
+  );
+}
+
+function resolveEnglishItemName(item, catalogProduct) {
+  if (!catalogProduct) return item.product_name || '—';
+
+  const baseName = catalogProduct.name || catalogProduct.name_en || item.product_name || '—';
+  const variant = findVariantForItem(item, catalogProduct.variants);
+  return variant?.labelEn ? `${baseName} (${variant.labelEn})` : baseName;
+}
+
+async function prepareInvoiceOrder(order) {
+  const items = order.order_items || [];
+  if (!items.length) return order;
+
+  try {
+    const [{ collection, getDocs }, db] = await Promise.all([
+      import('firebase/firestore'),
+      getAdminFirestore(),
+    ]);
+    const snap = await getDocs(collection(db, 'products'));
+    const bySlug = new Map();
+    const byId = new Map();
+    const catalog = snap.docs.map((docSnap) => {
+      const product = { id: docSnap.id, ...docSnap.data() };
+      if (product.slug) bySlug.set(product.slug, product);
+      byId.set(docSnap.id, product);
+      return product;
+    });
+
+    return {
+      ...order,
+      order_items: items.map((item) => {
+        const catalogProduct = findCatalogProduct(item, bySlug, byId, catalog);
+        return {
+          ...item,
+          product_name: resolveEnglishItemName(item, catalogProduct),
+        };
+      }),
+    };
+  } catch {
+    return order;
+  }
+}
+
+function buildCompactInvoiceHtml(order) {
+  const t = invoiceT;
   const items = order.order_items || [];
   const payment =
     order.payment_method === 'cod' ? t('admin.paymentCod') : order.payment_method || '—';
@@ -305,7 +407,7 @@ function buildCompactInvoiceHtml(order, { t, lang }) {
     .join('');
 
   const gpsText = hasValidLocation(order)
-    ? formatCoordinates(order.location_lat, order.location_lng, lang)
+    ? formatCoordinates(order.location_lat, order.location_lng, INVOICE_LANG)
     : '';
 
   return `
@@ -316,7 +418,7 @@ function buildCompactInvoiceHtml(order, { t, lang }) {
       <section class="receipt-block">
         <h3 class="receipt-block-title">${escapeHtml(t('admin.invoiceSectionOrder'))}</h3>
         ${receiptRow(t('admin.invoiceOrderNo'), order.id?.slice(0, 8) || '—', { ltr: true })}
-        ${receiptRow(t('admin.colDate'), formatWhen(order.created_at, lang))}
+        ${receiptRow(t('admin.colDate'), formatInvoiceWhen(order.created_at))}
         ${receiptRow(t('admin.colStatus'), statusLabel(order.status, t))}
         ${receiptRow(t('admin.paymentMethod'), payment)}
         ${order.discount_code ? receiptRow(t('admin.colDiscountCode'), order.discount_code, { ltr: true }) : ''}
@@ -405,8 +507,8 @@ function sanitizeFilename(name) {
     .slice(0, 80) || 'document';
 }
 
-async function downloadPdfFromHtml(title, bodyHtml, lang, options = {}) {
-  const { variant = 'full', filename = 'document.pdf' } = options;
+async function captureHtmlAsCanvas(title, bodyHtml, lang, options = {}) {
+  const { variant = 'full' } = options;
 
   const iframe = document.createElement('iframe');
   iframe.setAttribute('title', title);
@@ -423,7 +525,7 @@ async function downloadPdfFromHtml(title, bodyHtml, lang, options = {}) {
   const frameDoc = iframe.contentDocument || iframe.contentWindow?.document;
   if (!frameDoc) {
     iframe.remove();
-    throw new Error('PDF export failed');
+    throw new Error('Export failed');
   }
 
   frameDoc.open();
@@ -433,10 +535,7 @@ async function downloadPdfFromHtml(title, bodyHtml, lang, options = {}) {
   await waitForImages(frameDoc);
 
   const sheet = frameDoc.body.querySelector('.print-sheet') || frameDoc.body;
-  const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
-    import('html2canvas'),
-    import('jspdf'),
-  ]);
+  const { default: html2canvas } = await import('html2canvas');
 
   const canvas = await html2canvas(sheet, {
     scale: 2,
@@ -447,8 +546,30 @@ async function downloadPdfFromHtml(title, bodyHtml, lang, options = {}) {
   });
 
   iframe.remove();
+  return canvas;
+}
 
+function triggerImageDownload(canvas, filename) {
+  const link = document.createElement('a');
+  link.download = sanitizeFilename(filename);
+  link.href = canvas.toDataURL('image/png', 1.0);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
+async function downloadImageFromHtml(title, bodyHtml, lang, options = {}) {
+  const { variant = 'full', filename = 'document.png' } = options;
+  const canvas = await captureHtmlAsCanvas(title, bodyHtml, lang, { variant });
+  triggerImageDownload(canvas, filename);
+}
+
+async function downloadPdfFromHtml(title, bodyHtml, lang, options = {}) {
+  const { variant = 'full', filename = 'document.pdf' } = options;
+
+  const canvas = await captureHtmlAsCanvas(title, bodyHtml, lang, { variant });
   const imgData = canvas.toDataURL('image/png', 1.0);
+  const { jsPDF } = await import('jspdf');
 
   if (variant === 'compact') {
     const margin = 4;
@@ -505,13 +626,14 @@ function statusLabel(status, t) {
   return t(`admin.status.${key}`);
 }
 
-/** Download a single customer order invoice as PDF. */
-export async function printOrderInvoice(order, { t, lang }) {
-  const body = buildCompactInvoiceHtml(order, { t, lang });
+/** Download a single customer order invoice as a PNG image (always English). */
+export async function printOrderInvoice(order) {
+  const invoiceOrder = await prepareInvoiceOrder(order);
+  const body = buildCompactInvoiceHtml(invoiceOrder);
   const orderRef = order.id?.slice(0, 8) || 'order';
-  await downloadPdfFromHtml(t('admin.invoiceTitle'), body, lang, {
+  await downloadImageFromHtml(invoiceT('admin.invoiceTitle'), body, INVOICE_LANG, {
     variant: 'compact',
-    filename: `invoice-${orderRef}.pdf`,
+    filename: `invoice-${orderRef}.png`,
   });
 }
 

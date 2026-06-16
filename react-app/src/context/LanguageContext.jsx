@@ -44,3 +44,11 @@ export function useLanguage() {
   if (!ctx) throw new Error('useLanguage must be used within LanguageProvider');
   return ctx;
 }
+
+/** Admin panel always uses English regardless of storefront locale. */
+const adminTranslate = (key) => translations.en[key] ?? key;
+const adminLanguage = { lang: 'en', t: adminTranslate, toggleLang: () => {} };
+
+export function useAdminLanguage() {
+  return adminLanguage;
+}

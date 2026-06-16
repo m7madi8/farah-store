@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useLanguage } from '@/context/LanguageContext';
+import { useAdminLanguage } from '@/context/LanguageContext';
 import { AdminOrderDeleteDialog } from './AdminOrderDeleteDialog';
 import { AdminOrderList } from './AdminOrderList';
 import { isApprovedOrder } from './orderUtils';
@@ -8,7 +8,7 @@ import { AdminOrdersCount } from './AdminOrdersCount';
 import { useAdminOrders } from './useAdminOrders';
 
 export function AdminApprovedPage() {
-  const { t, lang } = useLanguage();
+  const { t, lang } = useAdminLanguage();
   const { data, setData, isLoading, error, setError } = useAdminOrders();
   const actions = useAdminOrderActions({ setData, setError, t });
   const approvedOrders = useMemo(() => data.filter(isApprovedOrder), [data]);

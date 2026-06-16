@@ -221,6 +221,7 @@ async function submitOrderFirebase(orderPayload) {
     product_id: item.productId || null,
     product_slug: item.productSlug || null,
     product_name: item.name ?? '',
+    variant_key: item.variantKey || null,
     quantity: item.quantity || 1,
     unit_price: item.price ?? 0,
   }));
