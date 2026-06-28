@@ -195,7 +195,7 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
                 height="750"
                 loading="eager"
                 decoding="sync"
-                fetchPriority="high"
+                fetchpriority="high"
                 onLoad={() => scrollToPageHeaderAfterPaint()}
                 onError={(e) => {
                   if (e.currentTarget.src.endsWith(DETAIL_IMAGE_FALLBACK)) {

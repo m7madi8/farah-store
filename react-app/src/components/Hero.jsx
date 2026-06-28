@@ -40,7 +40,7 @@ export function Hero() {
           height="200"
           loading="eager"
           decoding="sync"
-          fetchPriority="high"
+          fetchpriority="high"
         />
         <p className="hero-tagline">{tagline}</p>
         <button type="button" className="hero-shop-cta" onClick={scrollToShop}>
