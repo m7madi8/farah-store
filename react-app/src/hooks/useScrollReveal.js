@@ -1,48 +1,40 @@
-import { useEffect } from 'react';
-
-const REVEAL_SELECTOR = '.anim-on-scroll';
+import { useEffect, useLayoutEffect } from 'react';
+import { refreshScrollReveal } from '../lib/scrollReveal';
 
 /**
- * Reveal elements with `.anim-on-scroll` when they enter the viewport.
+ * Reveal `.anim-on-scroll` elements when they enter the viewport.
  * Re-runs when `deps` change (route, loaded data, etc.).
  */
 export function useScrollReveal(deps = []) {
-  useEffect(() => {
-    let observer;
+  useLayoutEffect(() => {
     let cancelled = false;
+    let raf2 = 0;
 
-    const timer = window.setTimeout(() => {
-      if (cancelled) return;
+    const run = () => {
+      if (!cancelled) refreshScrollReveal();
+    };
 
-      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const els = document.querySelectorAll(REVEAL_SELECTOR);
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(run);
+    });
 
-      if (!els.length) return;
-
-      if (reduceMotion) {
-        els.forEach((el) => el.classList.add('is-visible'));
-        return;
-      }
-
-      observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('is-visible');
-              observer.unobserve(entry.target);
-            }
-          });
-        },
-        { threshold: 0.06, rootMargin: '0px 0px 8% 0px' }
-      );
-
-      els.forEach((el) => observer.observe(el));
-    }, 80);
+    const lateTimer = window.setTimeout(run, 120);
 
     return () => {
       cancelled = true;
-      clearTimeout(timer);
-      observer?.disconnect();
+      cancelAnimationFrame(raf1);
+      if (raf2) cancelAnimationFrame(raf2);
+      clearTimeout(lateTimer);
     };
   }, deps);
+}
+
+/** Run once after mount (e.g. app shell). */
+export function useScrollRevealOnce() {
+  useEffect(() => {
+    refreshScrollReveal();
+    const onLoad = () => refreshScrollReveal();
+    window.addEventListener('load', onLoad);
+    return () => window.removeEventListener('load', onLoad);
+  }, []);
 }

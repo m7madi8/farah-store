@@ -2197,20 +2197,30 @@ section[id] { scroll-margin-top: 0; }
   --reveal-delay: 0ms;
   opacity: 0;
   transform: translateY(22px) scale(0.98);
-  transition:
-    opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
-  transition-delay: var(--reveal-delay);
-  will-change: opacity, transform;
 }
 
 .anim-on-scroll.is-visible {
-  opacity: 1;
-  transform: translateY(0) scale(1);
+  animation: revealUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--reveal-delay);
+}
+
+@keyframes revealUp {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .product-preview.anim-on-scroll.is-visible {
-  transform: translateY(0) scale(1);
+  animation: revealUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.product-details.anim-on-scroll:not(.is-visible) .product-details-list li {
+  opacity: 0;
 }
 
 .product-details.anim-on-scroll.is-visible .product-details-list li {
@@ -2599,8 +2609,8 @@ section[id] { scroll-margin-top: 0; }
   .hero-subtext.anim-fade-up,
   .hero-scroll.anim-fade { animation: none; opacity: 1; }
   .hero-tagline-char { animation: none; opacity: 1; }
-  .anim-on-scroll { opacity: 1; transform: none; transition: none; }
-  .anim-on-scroll.is-visible { opacity: 1; transform: none; }
+  .anim-on-scroll { opacity: 1; transform: none; animation: none; }
+  .anim-on-scroll.is-visible { opacity: 1; transform: none; animation: none; }
   .product-details.anim-on-scroll.is-visible .product-details-list li { animation: none; }
   .page-surface { animation: none; }
   .hero-cta:hover,
