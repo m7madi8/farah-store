@@ -14,6 +14,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { fetchProducts, getMockProducts } from '../services/api';
 import { siteConfig } from '../config/env';
 import { BiIcon } from '../components/BiIcon';
+import { useScrollReveal } from '../hooks/useScrollReveal';
 
 export function HomePage({ onCartOpen, cartOpen, setCartOpen }) {
   const { t, lang } = useLanguage();
@@ -45,27 +46,7 @@ export function HomePage({ onCartOpen, cartOpen, setCartOpen }) {
     return () => { cancelled = true; };
   }, []);
 
-  useEffect(() => {
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const els = document.querySelectorAll('.anim-on-scroll');
-    if (reduceMotion) {
-      els.forEach((el) => el.classList.add('is-visible'));
-      return undefined;
-    }
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.08, rootMargin: '0px 0px 40px 0px' }
-    );
-    els.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, [products]);
+  useScrollReveal([products, remoteChecked]);
 
   const shopList = useMemo(() => {
     const list = [...products];
@@ -116,7 +97,7 @@ export function HomePage({ onCartOpen, cartOpen, setCartOpen }) {
       <CartPanel isOpen={cartOpen} onClose={() => setCartOpen?.(false)} />
       <CartToast show={toastShow} onHide={() => setToastShow(false)} />
 
-      <main>
+      <main className="page-surface">
         <Hero />
         <section className="block-product" id="product">
           <div className="shop-wrap mx-auto">
@@ -131,15 +112,16 @@ export function HomePage({ onCartOpen, cartOpen, setCartOpen }) {
                     groupedByCategory.boxes.length === 1 ? ' shop-category-section--single' : ''
                   }`}
                 >
-                  <header className="shop-category-header">
+                  <header className="shop-category-header anim-on-scroll">
                     <h3 className="shop-category-title">{categoryMeta.boxes.title}</h3>
                     <p className="shop-category-sub">{categoryMeta.boxes.sub}</p>
                   </header>
                   <div className="shop-grid">
-                    {groupedByCategory.boxes.map((product) => (
+                    {groupedByCategory.boxes.map((product, index) => (
                       <ProductCard
                         key={product.id}
                         product={product}
+                        revealIndex={index}
                         onShowToast={() => setToastShow(true)}
                       />
                     ))}
@@ -149,7 +131,7 @@ export function HomePage({ onCartOpen, cartOpen, setCartOpen }) {
 
               {dateBallsProduct && (
                 <section className="shop-category-section shop-category-date-balls shop-category-section--single">
-                  <header className="shop-category-header">
+                  <header className="shop-category-header anim-on-scroll">
                     <h3 className="shop-category-title">{categoryMeta.dateBalls.title}</h3>
                     <p className="shop-category-sub">{categoryMeta.dateBalls.sub}</p>
                   </header>
@@ -157,6 +139,7 @@ export function HomePage({ onCartOpen, cartOpen, setCartOpen }) {
                     <ProductCard
                       key={dateBallsProduct.id}
                       product={dateBallsProduct}
+                      revealIndex={0}
                       onShowToast={() => setToastShow(true)}
                     />
                   </div>
@@ -169,15 +152,16 @@ export function HomePage({ onCartOpen, cartOpen, setCartOpen }) {
                     groupedByCategory.sauces.length === 1 ? ' shop-category-section--single' : ''
                   }`}
                 >
-                  <header className="shop-category-header">
+                  <header className="shop-category-header anim-on-scroll">
                     <h3 className="shop-category-title">{categoryMeta.sauces.title}</h3>
                     <p className="shop-category-sub">{categoryMeta.sauces.sub}</p>
                   </header>
                   <div className="shop-grid">
-                    {groupedByCategory.sauces.map((product) => (
+                    {groupedByCategory.sauces.map((product, index) => (
                       <ProductCard
                         key={product.id}
                         product={product}
+                        revealIndex={index}
                         onShowToast={() => setToastShow(true)}
                       />
                     ))}
@@ -191,15 +175,16 @@ export function HomePage({ onCartOpen, cartOpen, setCartOpen }) {
                     groupedByCategory.chopsticks.length === 1 ? ' shop-category-section--single' : ''
                   }`}
                 >
-                  <header className="shop-category-header">
+                  <header className="shop-category-header anim-on-scroll">
                     <h3 className="shop-category-title">{categoryMeta.chopsticks.title}</h3>
                     <p className="shop-category-sub">{categoryMeta.chopsticks.sub}</p>
                   </header>
                   <div className="shop-grid">
-                    {groupedByCategory.chopsticks.map((product) => (
+                    {groupedByCategory.chopsticks.map((product, index) => (
                       <ProductCard
                         key={product.id}
                         product={product}
+                        revealIndex={index}
                         onShowToast={() => setToastShow(true)}
                       />
                     ))}
@@ -208,7 +193,7 @@ export function HomePage({ onCartOpen, cartOpen, setCartOpen }) {
               )}
             </div>
             {shopList.length === 0 && remoteChecked && (
-              <div className="shop-empty" aria-live="polite">
+              <div className="shop-empty anim-on-scroll" aria-live="polite">
                 <BiIcon name="inbox" />
                 <p className="shop-empty-title">{emptyLabel}</p>
                 <p className="shop-empty-desc">{t('empty.desc')}</p>

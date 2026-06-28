@@ -38,7 +38,7 @@ export function Navbar({ onCartClick, showCart = true, backToShop = false, alway
   }, [alwaysShowBackground]);
 
   return (
-    <nav ref={navRef} className="nav-minimal fixed-top" id="nav">
+    <nav ref={navRef} className="nav-minimal fixed-top anim-fade-down" id="nav">
       <div className="container-fluid px-4">
         <Link className="nav-brand drop-shadow-sm" to="/">
           {t('nav.brand')}

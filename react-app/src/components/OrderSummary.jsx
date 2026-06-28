@@ -23,7 +23,7 @@ export function OrderSummary({
   const showDiscountError = discountError || discountInvalid;
 
   return (
-    <section className="checkout-summary ui-card" aria-labelledby="summaryHeading">
+    <section className="checkout-summary ui-card anim-on-scroll" aria-labelledby="summaryHeading">
       <h2 id="summaryHeading" className="checkout-summary-title">
         {t('checkout.orderSummary')}
       </h2>

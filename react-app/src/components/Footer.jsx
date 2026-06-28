@@ -11,7 +11,7 @@ export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="site-footer" role="contentinfo">
+    <footer className="site-footer anim-on-scroll" role="contentinfo">
       <div className="footer-top">
         <div className="footer-col footer-col-brand">
           <span className="footer-brand">{t('nav.brand')}</span>

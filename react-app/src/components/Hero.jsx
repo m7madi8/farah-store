@@ -35,19 +35,19 @@ export function Hero() {
         <img
           src="/img/logo.webp"
           alt="Chef Farah Ammar"
-          className="hero-logo"
+          className="hero-logo anim-fade-up"
           width="400"
           height="200"
           loading="eager"
           decoding="sync"
           fetchpriority="high"
         />
-        <p className="hero-tagline">{tagline}</p>
-        <button type="button" className="hero-shop-cta" onClick={scrollToShop}>
+        <p className="hero-tagline anim-fade-up">{tagline}</p>
+        <button type="button" className="hero-shop-cta anim-fade-up" onClick={scrollToShop}>
           {t('hero.shopNow')}
         </button>
       </div>
-      <div className="hero-scroll">
+      <div className="hero-scroll anim-fade">
         <span>{t('hero.scroll')}</span>
         <BiIcon name="chevron-down" />
       </div>

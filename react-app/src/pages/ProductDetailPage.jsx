@@ -15,6 +15,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
 import { fetchProductBySlug, getProductBySlug } from '../services/api';
 import { scrollToPageHeaderAfterPaint } from '../lib/scrollToTop';
+import { useScrollReveal } from '../hooks/useScrollReveal';
 import { DESKTOP_HERO_MEDIA, getResponsiveHeroImages } from '../lib/productHeroImages';
 import { FloatingBackButton } from '../components/FloatingBackButton';
 import { SiteIcon } from '../components/SiteIcon';
@@ -101,6 +102,8 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
     return () => { cancelled = true; };
   }, [slug, navProduct]);
 
+  useScrollReveal([product?.slug]);
+
   const name = lang === 'ar' && product?.nameAr ? product.nameAr : (product?.name || '');
   const desc = lang === 'ar' && product?.descriptionAr ? product.descriptionAr : (product?.description || '');
   const hasVariants = product?.variants && product.variants.length > 0;
@@ -181,7 +184,7 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
       <Navbar backToShop={false} alwaysShowBackground onCartClick={onCartOpen ? () => onCartOpen(true) : undefined} />
       <CartPanel isOpen={cartOpen} onClose={() => setCartOpen?.(false)} />
       <CartToast show={toastShow} onHide={() => setToastShow(false)} />
-      <main className={`product-main has-floating-back${isDateBalls ? ' product-main-date-balls' : ''}${isDumplingsHero ? ' product-main-dumplings' : ''}`}>
+      <main className={`product-main page-surface has-floating-back${isDateBalls ? ' product-main-date-balls' : ''}${isDumplingsHero ? ' product-main-dumplings' : ''}`}>
         <div className={`product-hero${isDateBalls ? ' product-hero-date-balls' : ''}${isDumplingsHero ? ' product-hero-dumplings' : ''}`}>
           <div className="product-hero-image product-hero-anim">
             <picture>
@@ -227,7 +230,7 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
         </div>
         <div className="product-content product-content-anim">
           <div className="product-content-inner product-content-anim">
-            <header className="product-header">
+            <header className="product-header anim-on-scroll">
               <h1 className="product-name">{name}</h1>
               {hasVariants && (
                 <div className="product-variants" role="group" aria-label={lang === 'ar' ? 'اختر الحجم' : 'Choose size'}>
@@ -250,7 +253,7 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
               <p className="product-lead">{desc}</p>
             </header>
             {product.details && product.details.length > 0 && (
-              <section className="product-details">
+              <section className="product-details anim-on-scroll" style={{ '--reveal-delay': '80ms' }}>
                 <h2 className="product-details-title">{t('product.inside')}</h2>
                 <ul className="product-details-list">
                   {product.details.map((key) => (
@@ -259,7 +262,7 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
                 </ul>
               </section>
             )}
-            <section className="product-buy" id="buy">
+            <section className="product-buy anim-on-scroll" id="buy" style={{ '--reveal-delay': '140ms' }}>
               <h2 className="product-buy-title">{t('product.buyTitle')}</h2>
               <p className="product-buy-desc">{t('product.buyDesc')}</p>
               <div className="product-buy-btns">

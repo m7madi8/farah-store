@@ -30,7 +30,7 @@ const PRODUCT_PLACEHOLDER_SVG =
   );
 const STATIC_PRODUCT_FALLBACK = '/img/2.webp';
 
-export function ProductCard({ product, onShowToast }) {
+export function ProductCard({ product, onShowToast, revealIndex = 0 }) {
   const { t, lang } = useLanguage();
   const { addItem } = useCart();
   const hasDetailPage = !NO_DETAIL_PAGE_SLUGS.includes(product.slug);
@@ -140,12 +140,15 @@ export function ProductCard({ product, onShowToast }) {
     </>
   );
 
+  const revealDelay = `${Math.min(revealIndex, 10) * 70}ms`;
+
   return (
     <div
-      className="product-preview product-preview-card"
+      className="product-preview product-preview-card anim-on-scroll"
       data-category={product.category}
       data-price={product.price}
       data-order={product.order}
+      style={{ '--reveal-delay': revealDelay }}
     >
       {hasDetailPage ? (
         <Link {...detailLinkProps} className="product-preview-link">

@@ -129,9 +129,9 @@ export function CheckoutPage() {
     return (
       <>
         <Navbar alwaysShowBackground />
-        <main className="checkout-page has-floating-back">
+        <main className="checkout-page page-surface has-floating-back">
           <div className="checkout-wrap">
-            <div className="checkout-empty">
+            <div className="checkout-empty anim-on-scroll">
               <BiIcon name="cart-x" />
               <p className="checkout-empty-title">{t('checkout.emptyCart')}</p>
               <p className="checkout-empty-desc">{t('checkout.emptyDesc')}</p>
@@ -149,9 +149,9 @@ export function CheckoutPage() {
   return (
     <>
       <Navbar alwaysShowBackground />
-      <main className="checkout-main has-floating-back">
+      <main className="checkout-main page-surface has-floating-back">
         <div className="checkout-wrap">
-          <header className="checkout-header">
+          <header className="checkout-header anim-on-scroll">
             <h1 className="checkout-title">{t('checkout.title')}</h1>
             <p className="checkout-sub">{t('checkout.sub')}</p>
           </header>
@@ -163,7 +163,7 @@ export function CheckoutPage() {
               onDiscountCodeChange={(value) => handleChange('discountCode', value)}
               discountError={errors.discountCode}
             />
-            <form className="checkout-form ui-card" onSubmit={handleSubmit} noValidate>
+            <form className="checkout-form ui-card anim-on-scroll" onSubmit={handleSubmit} noValidate style={{ '--reveal-delay': '90ms' }}>
               <h2 className="checkout-form-title">{t('checkout.yourDetails')}</h2>
               <div className="checkout-field">
                 <label htmlFor="checkoutName" className="checkout-label">{t('checkout.name')}</label>
