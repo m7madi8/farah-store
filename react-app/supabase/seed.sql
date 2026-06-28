@@ -12,7 +12,7 @@ insert into public.products (
   'Handcrafted chicken dumplings with rich flavors.',
   'دامبلنغ دجاج مصنوع يدوياً.',
   25, 'boxes',
-  '/img/1.webp', '/img/2.webp', 1, 'Signature',
+  '/img/1.webp', '/img/pro1.png', 1, 'Signature',
   '["detail1","detail2","detail3","detail4","detail5","detailTeriyaki","detailSweetChili","detail6"]'::jsonb,
   null,
   '[]'::jsonb
@@ -25,7 +25,7 @@ insert into public.products (
   'Handcrafted meat dumplings.',
   'دامبلنغ لحم.',
   27, 'boxes',
-  '/img/1.webp', '/img/2.webp', 2, 'Signature',
+  '/img/1.webp', '/img/pro1.png', 2, 'Signature',
   '["detail1","detail2Meat","detail3","detail4","detail5","detailTeriyaki","detailSweetChili","detail6"]'::jsonb,
   null,
   '[]'::jsonb
@@ -103,10 +103,10 @@ insert into public.products (
   'Date balls with chocolate.',
   'كرات تمر بالشوكولاته.',
   25, 'boxes',
-  '/img/pro2.png', '/img/pro2.png', 8, 'Signature',
+  '/img/pro2.jpg', '/img/pro2.jpg', 8, 'Signature',
   '[]'::jsonb,
   '[{"key":"7","labelEn":"7 pieces","labelAr":"٧ حبات","price":25},{"key":"16","labelEn":"16 pieces","labelAr":"١٦ حبة","price":45}]'::jsonb,
-  '["/img/pro2.png"]'::jsonb
+  '["/img/pro2.jpg"]'::jsonb
 )
 on conflict (slug) do nothing;
 

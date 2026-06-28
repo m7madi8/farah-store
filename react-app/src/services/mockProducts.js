@@ -1,7 +1,7 @@
 /** Demo catalog — loaded on demand when Firebase/REST are unavailable. */
 export const MOCK_PRODUCTS = [
-  { id: '1', slug: 'dumplings-chicken', name: 'Dumplings – Chicken', nameAr: 'دامبلنغ – دجاج', description: 'Handcrafted chicken dumplings with rich flavors. Created by Chef Farah.', descriptionAr: 'دامبلنغ دجاج مصنوع يدوياً بنكهات غنية. من إبداع الشيف فرح.', price: 25, category: 'boxes', order: 1, badge: 'Signature', details: ['detail1', 'detail2', 'detail3', 'detail4', 'detail5', 'detailTeriyaki', 'detailSweetChili', 'detail6'] },
-  { id: '2', slug: 'dumplings-meat', name: 'Dumplings – Meat', nameAr: 'دامبلنغ – لحم', description: 'Handcrafted meat dumplings with rich flavors. Created by Chef Farah.', descriptionAr: 'دامبلنغ لحم مصنوع يدوياً بنكهات غنية. من إبداع الشيف فرح.', price: 27, category: 'boxes', order: 2, badge: 'Signature', details: ['detail1', 'detail2Meat', 'detail3', 'detail4', 'detail5', 'detailTeriyaki', 'detailSweetChili', 'detail6'] },
+  { id: '1', slug: 'dumplings-chicken', name: 'Dumplings – Chicken', nameAr: 'دامبلنغ – دجاج', description: 'Handcrafted chicken dumplings with rich flavors. Created by Chef Farah.', descriptionAr: 'دامبلنغ دجاج مصنوع يدوياً بنكهات غنية. من إبداع الشيف فرح.', price: 25, category: 'boxes', imageUrl: '/img/1.webp', heroImage: '/img/1.webp', order: 1, badge: 'Signature', details: ['detail1', 'detail2', 'detail3', 'detail4', 'detail5', 'detailTeriyaki', 'detailSweetChili', 'detail6'] },
+  { id: '2', slug: 'dumplings-meat', name: 'Dumplings – Meat', nameAr: 'دامبلنغ – لحم', description: 'Handcrafted meat dumplings with rich flavors. Created by Chef Farah.', descriptionAr: 'دامبلنغ لحم مصنوع يدوياً بنكهات غنية. من إبداع الشيف فرح.', price: 27, category: 'boxes', imageUrl: '/img/1.webp', heroImage: '/img/1.webp', order: 2, badge: 'Signature', details: ['detail1', 'detail2Meat', 'detail3', 'detail4', 'detail5', 'detailTeriyaki', 'detailSweetChili', 'detail6'] },
   { id: '3', slug: 'teriyaki-sauce', name: 'Teriyaki sauce', nameAr: 'صلصة ترياكي', description: 'Rich teriyaki glaze, perfect for dumplings and stir-fry.', descriptionAr: 'صلصة ترياكي غنية، مثالية للدامبلنغ والقلي السريع.', price: 2, category: 'sauces', imageUrl: '/img/teriyaki.webp', heroImage: '/img/teriyaki.webp', order: 3, badge: 'Sauce', details: [] },
   { id: '4', slug: 'soya-sauce', name: 'Soya sauce', nameAr: 'صلصة صويا', description: 'Classic soy sauce for dipping and cooking.', descriptionAr: 'صلصة صويا كلاسيكية للغمس والطبخ.', price: 2, category: 'sauces', imageUrl: '/img/soya.webp', heroImage: '/img/soya.webp', order: 4, badge: 'Sauce', details: [] },
   { id: '5', slug: 'buffalo-sauce', name: 'Buffalo sauce', nameAr: 'صلصة بافلو', description: 'Spicy buffalo sauce for a bold kick.', descriptionAr: 'صلصة بافلو حارة لمذاق قوي.', price: 2, category: 'sauces', imageUrl: '/img/buffalo.webp', heroImage: '/img/buffalo.webp', order: 5, badge: 'Sauce', details: [] },
@@ -16,8 +16,8 @@ export const MOCK_PRODUCTS = [
     descriptionAr: 'كرات تمر لذيذة مغطاة بالشوكولاته. حجمين متوفرين.',
     price: 25,
     category: 'boxes',
-    imageUrl: '/img/pro2.png',
-    heroImage: '/img/pro2.png',
+    imageUrl: '/img/pro2.jpg',
+    heroImage: '/img/pro2.jpg',
     order: 8,
     badge: 'Signature',
     details: [],
@@ -25,6 +25,6 @@ export const MOCK_PRODUCTS = [
       { key: '7', labelEn: '7 pieces', labelAr: '٧ حبات', price: 25 },
       { key: '16', labelEn: '16 pieces', labelAr: '١٦ حبة', price: 45 },
     ],
-    images: ['/img/pro2.png'],
+    images: ['/img/pro2.jpg'],
   },
 ];

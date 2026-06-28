@@ -64,10 +64,10 @@ function localImageBySlug(slug) {
   const cleanSlug = String(slug).trim();
   if (!cleanSlug) return null;
   if (cleanSlug === 'date-balls-chocolate') {
-    return '/img/pro2.png';
+    return '/img/pro2.jpg';
   }
-  if (cleanSlug === 'dumplings-meat') {
-    return '/img/products/dumplings-chicken/dumplings-chicken.webp';
+  if (cleanSlug === 'dumplings-chicken' || cleanSlug === 'dumplings-meat') {
+    return '/img/1.webp';
   }
   return `/img/products/${cleanSlug}/${cleanSlug}.webp`;
 }

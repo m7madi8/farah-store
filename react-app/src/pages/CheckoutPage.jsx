@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { FloatingBackButton } from '../components/FloatingBackButton';
 import { Navbar } from '../components/Navbar';
 import { OrderSummary } from '../components/OrderSummary';
 import { useLanguage } from '../context/LanguageContext';
@@ -127,8 +128,8 @@ export function CheckoutPage() {
   if (items.length === 0 && !success) {
     return (
       <>
-        <Navbar backToShop alwaysShowBackground />
-        <main className="checkout-page">
+        <Navbar alwaysShowBackground />
+        <main className="checkout-page has-floating-back">
           <div className="checkout-wrap">
             <div className="checkout-empty">
               <BiIcon name="cart-x" />
@@ -140,14 +141,15 @@ export function CheckoutPage() {
             </div>
           </div>
         </main>
+        <FloatingBackButton label={t('checkout.backToShop')} />
       </>
     );
   }
 
   return (
     <>
-      <Navbar backToShop alwaysShowBackground />
-      <main className="checkout-main">
+      <Navbar alwaysShowBackground />
+      <main className="checkout-main has-floating-back">
         <div className="checkout-wrap">
           <header className="checkout-header">
             <h1 className="checkout-title">{t('checkout.title')}</h1>
@@ -276,6 +278,7 @@ export function CheckoutPage() {
           <span className="checkout-toast-text">{t('checkout.successMessage')}</span>
         </div>
       </main>
+      <FloatingBackButton label={t('checkout.backToShop')} />
     </>
   );
 }

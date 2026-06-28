@@ -5,7 +5,7 @@
 
 import '@/styles/product.css';
 import { useState, useEffect, useMemo } from 'react';
-import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { NO_DETAIL_PAGE_SLUGS } from '../constants/products';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
@@ -15,6 +15,8 @@ import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
 import { fetchProductBySlug, getProductBySlug } from '../services/api';
 import { scrollToPageHeaderAfterPaint } from '../lib/scrollToTop';
+import { DESKTOP_HERO_MEDIA, getResponsiveHeroImages } from '../lib/productHeroImages';
+import { FloatingBackButton } from '../components/FloatingBackButton';
 import { SiteIcon } from '../components/SiteIcon';
 
 const DETAIL_IMAGE_FALLBACK = '/img/2.webp';
@@ -114,30 +116,42 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
   );
   const mainImageSrc = galleryImages[galleryIndex] || galleryImages[0] || DETAIL_IMAGE_FALLBACK;
 
+  const responsiveHero = useMemo(() => getResponsiveHeroImages(product?.slug), [product?.slug]);
+  const heroMobileSrc = responsiveHero?.mobile ?? mainImageSrc;
+  const heroDesktopSrc = responsiveHero?.desktop ?? mainImageSrc;
+
   const isDateBalls = product?.slug === 'date-balls-chocolate';
+  const isDumplingsHero = responsiveHero != null;
 
   useEffect(() => {
-    if (!mainImageSrc || mainImageSrc.startsWith('data:')) return undefined;
+    const mobile = heroMobileSrc;
+    const desktop = heroDesktopSrc;
+    const href =
+      desktop && desktop !== mobile && window.matchMedia(DESKTOP_HERO_MEDIA).matches
+        ? desktop
+        : mobile;
+    if (!href || href.startsWith('data:')) return undefined;
+
     const link = document.createElement('link');
     link.rel = 'preload';
     link.as = 'image';
-    link.href = mainImageSrc;
+    link.href = href;
     document.head.appendChild(link);
     return () => { link.remove(); };
-  }, [mainImageSrc]);
+  }, [heroMobileSrc, heroDesktopSrc]);
 
   if (!product) {
     return (
       <>
         <Navbar backToShop alwaysShowBackground onCartClick={onCartOpen ? () => onCartOpen(true) : undefined} />
-        <main className="product-main" style={{ padding: '4rem 1rem', textAlign: 'center' }}>
+        <main className="product-main has-floating-back" style={{ padding: '4rem 1rem', textAlign: 'center' }}>
           {notFound ? (
             <>
               <p>{lang === 'ar' ? 'المنتج غير موجود' : 'Product not found'}</p>
-              <Link to="/">{(lang === 'ar' ? 'الرئيسية' : 'Home')}</Link>
             </>
           ) : null}
         </main>
+        <FloatingBackButton />
       </>
     );
   }
@@ -167,12 +181,15 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
       <Navbar backToShop={false} alwaysShowBackground onCartClick={onCartOpen ? () => onCartOpen(true) : undefined} />
       <CartPanel isOpen={cartOpen} onClose={() => setCartOpen?.(false)} />
       <CartToast show={toastShow} onHide={() => setToastShow(false)} />
-      <main className={`product-main${isDateBalls ? ' product-main-date-balls' : ''}`}>
-        <div className={`product-hero${isDateBalls ? ' product-hero-date-balls' : ''}`}>
+      <main className={`product-main has-floating-back${isDateBalls ? ' product-main-date-balls' : ''}${isDumplingsHero ? ' product-main-dumplings' : ''}`}>
+        <div className={`product-hero${isDateBalls ? ' product-hero-date-balls' : ''}${isDumplingsHero ? ' product-hero-dumplings' : ''}`}>
           <div className="product-hero-image product-hero-anim">
             <picture>
+              {responsiveHero && (
+                <source media={DESKTOP_HERO_MEDIA} srcSet={heroDesktopSrc} />
+              )}
               <img
-                src={mainImageSrc}
+                src={heroMobileSrc}
                 alt={name}
                 width="1200"
                 height="750"
@@ -210,20 +227,6 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
         </div>
         <div className="product-content product-content-anim">
           <div className="product-content-inner product-content-anim">
-            <button
-              type="button"
-              className="product-back"
-              onClick={() => {
-                navigate('/');
-                setTimeout(() => {
-                  const el = document.getElementById('product');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }, 80);
-              }}
-            >
-              <SiteIcon name="back" />
-              <span>{t('product.backHome')}</span>
-            </button>
             <header className="product-header">
               <h1 className="product-name">{name}</h1>
               {hasVariants && (
@@ -281,6 +284,7 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
           </div>
         </div>
       </main>
+      <FloatingBackButton />
       <Footer />
     </>
   );
