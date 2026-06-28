@@ -909,9 +909,8 @@ section[id] { scroll-margin-top: 0; }
   gap: 0.25rem;
   padding: 0.25rem 0.35rem;
   border-radius: 999px;
-  background: rgba(250, 249, 247, 0.96);
+  background: rgba(250, 249, 247, 0.98);
   box-shadow: 0 10px 24px rgba(75, 42, 99, 0.1);
-  backdrop-filter: blur(14px);
   max-width: 100%;
   overflow-x: auto;
 }
@@ -1144,8 +1143,8 @@ section[id] { scroll-margin-top: 0; }
   text-decoration: none;
   color: inherit;
   overflow: hidden;
-  box-shadow: 0 12px 30px rgba(15, 18, 33, 0.06);
-  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s ease;
+  box-shadow: 0 8px 22px rgba(15, 18, 33, 0.05);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -2186,7 +2185,7 @@ section[id] { scroll-margin-top: 0; }
 .hero-title.anim-fade-up { opacity: 0; animation: fadeUp 0.9s ease-out 0.3s forwards; }
 .hero-tagline.anim-fade-up {
   opacity: 0;
-  animation: fadeUp 0.8s ease-out 0.5s forwards, heroTaglineTextMotion 4s ease-in-out 1.3s infinite;
+  animation: fadeUp 0.8s ease-out 0.5s forwards;
 }
 
 .hero-subtext.anim-fade-up { opacity: 0; animation: fadeUp 0.8s ease-out 0.58s forwards; }
@@ -2196,27 +2195,52 @@ section[id] { scroll-margin-top: 0; }
 .anim-on-scroll {
   --reveal-delay: 0ms;
   opacity: 0;
-  transform: translateY(22px) scale(0.98);
+  transform: translateY(16px);
 }
 
 .anim-on-scroll.is-visible {
-  animation: revealUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: revealUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: var(--reveal-delay);
 }
 
-@keyframes revealUp {
-  from {
-    opacity: 0;
-    transform: translateY(22px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+.anim-on-scroll.is-visible.reveal-settled {
+  animation: none;
+  opacity: 1;
+  transform: none;
 }
 
 .product-preview.anim-on-scroll.is-visible {
-  animation: revealUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: revealUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.product-preview.anim-on-scroll.reveal-settled {
+  animation: none;
+  transform: none;
+}
+
+.shop-category-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 520px;
+}
+
+.product-preview-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 440px;
+}
+
+body.is-scrolling .hero-bg::before,
+body.is-scrolling .hero-scroll,
+body.is-scrolling .hero-scroll i,
+body.is-scrolling .hero-tagline {
+  animation-play-state: paused !important;
+}
+
+body.is-scrolling .product-preview {
+  transition: none !important;
+}
+
+body.is-scrolling .product-preview-image img {
+  transition: none !important;
 }
 
 .product-details.anim-on-scroll:not(.is-visible) .product-details-list li {
@@ -2235,6 +2259,17 @@ section[id] { scroll-margin-top: 0; }
 .product-details.anim-on-scroll.is-visible .product-details-list li:nth-child(6) { animation-delay: 0.38s; }
 .product-details.anim-on-scroll.is-visible .product-details-list li:nth-child(7) { animation-delay: 0.44s; }
 .product-details.anim-on-scroll.is-visible .product-details-list li:nth-child(8) { animation-delay: 0.5s; }
+
+@keyframes revealUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 @keyframes revealLine {
   from {
@@ -2610,7 +2645,8 @@ section[id] { scroll-margin-top: 0; }
   .hero-scroll.anim-fade { animation: none; opacity: 1; }
   .hero-tagline-char { animation: none; opacity: 1; }
   .anim-on-scroll { opacity: 1; transform: none; animation: none; }
-  .anim-on-scroll.is-visible { opacity: 1; transform: none; animation: none; }
+  .anim-on-scroll.is-visible,
+  .anim-on-scroll.reveal-settled { opacity: 1; transform: none; animation: none; }
   .product-details.anim-on-scroll.is-visible .product-details-list li { animation: none; }
   .page-surface { animation: none; }
   .hero-cta:hover,

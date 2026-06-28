@@ -21,8 +21,16 @@ export function Navbar({ onCartClick, showCart = true, backToShop = false, alway
     const nav = navRef.current;
     if (!nav) return;
     let ticking = false;
+    let scrolled = alwaysShowBackground || window.scrollY > 60;
+    nav.classList.toggle('nav-scrolled', scrolled);
+
     const update = () => {
       const show = alwaysShowBackground || window.scrollY > 60;
+      if (show === scrolled) {
+        ticking = false;
+        return;
+      }
+      scrolled = show;
       nav.classList.toggle('nav-scrolled', show);
       ticking = false;
     };

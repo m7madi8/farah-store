@@ -199,7 +199,9 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
                 loading="eager"
                 decoding="sync"
                 fetchpriority="high"
-                onLoad={() => scrollToPageHeaderAfterPaint()}
+                onLoad={() => {
+                  if (!window.scrollY) scrollToPageHeaderAfterPaint();
+                }}
                 onError={(e) => {
                   if (e.currentTarget.src.endsWith(DETAIL_IMAGE_FALLBACK)) {
                     e.currentTarget.src = DETAIL_IMAGE_PLACEHOLDER;

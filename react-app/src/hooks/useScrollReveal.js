@@ -1,40 +1,37 @@
-import { useEffect, useLayoutEffect } from 'react';
-import { refreshScrollReveal } from '../lib/scrollReveal';
+import { useEffect } from 'react';
+import { initScrollPerformance, refreshScrollReveal } from '../lib/scrollReveal';
 
 /**
  * Reveal `.anim-on-scroll` elements when they enter the viewport.
  * Re-runs when `deps` change (route, loaded data, etc.).
  */
 export function useScrollReveal(deps = []) {
-  useLayoutEffect(() => {
+  useEffect(() => {
     let cancelled = false;
-    let raf2 = 0;
+    let raf = 0;
 
     const run = () => {
       if (!cancelled) refreshScrollReveal();
     };
 
-    const raf1 = requestAnimationFrame(() => {
-      raf2 = requestAnimationFrame(run);
-    });
-
-    const lateTimer = window.setTimeout(run, 120);
+    raf = requestAnimationFrame(run);
 
     return () => {
       cancelled = true;
-      cancelAnimationFrame(raf1);
-      if (raf2) cancelAnimationFrame(raf2);
-      clearTimeout(lateTimer);
+      cancelAnimationFrame(raf);
     };
   }, deps);
 }
 
-/** Run once after mount (e.g. app shell). */
-export function useScrollRevealOnce() {
+/** App shell: scroll perf + one extra refresh after full load. */
+export function useScrollPerformance() {
   useEffect(() => {
-    refreshScrollReveal();
+    const cleanupScroll = initScrollPerformance();
     const onLoad = () => refreshScrollReveal();
-    window.addEventListener('load', onLoad);
-    return () => window.removeEventListener('load', onLoad);
+    window.addEventListener('load', onLoad, { once: true });
+    return () => {
+      cleanupScroll();
+      window.removeEventListener('load', onLoad);
+    };
   }, []);
 }

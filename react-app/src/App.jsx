@@ -11,7 +11,7 @@ import { HomePage } from './pages/HomePage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
 import { SiteMeta } from './components/SiteMeta';
 import { scrollToPageHeaderAfterPaint } from './lib/scrollToTop';
-import { useScrollReveal, useScrollRevealOnce } from './hooks/useScrollReveal';
+import { useScrollReveal, useScrollPerformance } from './hooks/useScrollReveal';
 
 const CheckoutPage = lazy(() =>
   import('./pages/CheckoutPage').then((m) => ({ default: m.CheckoutPage }))
@@ -50,7 +50,7 @@ function AppRoutes() {
     scrollToPageHeaderAfterPaint();
   }, [location.pathname]);
 
-  useScrollRevealOnce();
+  useScrollPerformance();
   useScrollReveal([location.pathname, location.key]);
 
   useEffect(() => {

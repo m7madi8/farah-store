@@ -140,7 +140,7 @@ export function ProductCard({ product, onShowToast, revealIndex = 0 }) {
     </>
   );
 
-  const revealDelay = `${Math.min(revealIndex, 10) * 70}ms`;
+  const revealDelay = `${Math.min(revealIndex, 6) * 50}ms`;
 
   return (
     <div
