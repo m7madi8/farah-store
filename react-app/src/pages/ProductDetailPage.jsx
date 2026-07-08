@@ -19,6 +19,7 @@ import { useScrollReveal } from '../hooks/useScrollReveal';
 import { DESKTOP_HERO_MEDIA, getResponsiveHeroImages } from '../lib/productHeroImages';
 import { FloatingBackButton } from '../components/FloatingBackButton';
 import { SiteIcon } from '../components/SiteIcon';
+import { ProductNutrition } from '../components/ProductNutrition';
 
 const DETAIL_IMAGE_FALLBACK = '/img/2.webp';
 const DETAIL_IMAGE_PLACEHOLDER =
@@ -286,6 +287,7 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
                 </button>
               </div>
             </section>
+            <ProductNutrition slug={product.slug} />
           </div>
         </div>
       </main>

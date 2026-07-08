@@ -1,7 +1,7 @@
-/** Valid promo codes → discount percent (e.g. sam15 → 15% off). */
+/** Valid promo codes → discount percent (e.g. sam10 → 10% off). */
 export const VALID_DISCOUNT_CODES = {
-  sam15: 15,
-  sahar15: 15,
+  sam10: 10,
+  sahar10: 10,
 };
 
 export function normalizeDiscountCode(raw) {

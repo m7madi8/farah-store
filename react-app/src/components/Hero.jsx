@@ -7,21 +7,31 @@ import { useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { BiIcon } from './BiIcon';
 
+const HERO_SETTLE_MS = 1300;
+
 export function Hero() {
   const { t } = useLanguage();
   const tagline = t('hero.tagline');
 
   useEffect(() => {
-    const hero = document.getElementById('hero');
-    if (!hero) return undefined;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        hero.classList.toggle('hero-paused', !entry.isIntersecting);
-      },
-      { threshold: 0 }
-    );
-    observer.observe(hero);
-    return () => observer.disconnect();
+    const section = document.getElementById('hero');
+    if (!section) return undefined;
+
+    const settle = () => section.classList.add('hero-settled');
+
+    const onEnd = (event) => {
+      if (event.animationName === 'fadeIn' || event.animationName === 'fadeUp' || event.animationName === 'logoEntrance') {
+        settle();
+      }
+    };
+
+    section.addEventListener('animationend', onEnd);
+    const timer = window.setTimeout(settle, HERO_SETTLE_MS);
+
+    return () => {
+      section.removeEventListener('animationend', onEnd);
+      window.clearTimeout(timer);
+    };
   }, []);
 
   const scrollToShop = () => {
@@ -48,7 +58,7 @@ export function Hero() {
         </button>
       </div>
       <div className="hero-scroll anim-fade">
-        <span>{t('hero.scroll')}</span>
+        <span className="hero-scroll-label">{t('hero.scroll')}</span>
         <BiIcon name="chevron-down" />
       </div>
     </section>

@@ -457,6 +457,114 @@
   border-top: 1px solid rgba(122,92,142,0.2);
 }
 
+.product-nutrition {
+  margin-top: 2rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid rgba(122,92,142,0.2);
+}
+
+.product-nutrition-details {
+  border-radius: 1rem;
+  background: rgba(250, 249, 247, 0.85);
+  box-shadow: 0 0 0 1px rgba(122, 92, 142, 0.12);
+}
+
+.product-nutrition-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.15rem;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--deep-purple);
+  user-select: none;
+}
+
+.product-nutrition-summary::-webkit-details-marker {
+  display: none;
+}
+
+.product-nutrition-summary::after {
+  content: '';
+  flex-shrink: 0;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-right: 2px solid var(--lavender);
+  border-bottom: 2px solid var(--lavender);
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+  margin-top: -0.2rem;
+}
+
+.product-nutrition-details[open] .product-nutrition-summary::after {
+  transform: rotate(-135deg);
+  margin-top: 0.15rem;
+}
+
+.product-nutrition-body {
+  padding: 0 1.15rem 1.15rem;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.product-nutrition-block + .product-nutrition-block {
+  padding-top: 1rem;
+  border-top: 1px solid rgba(122, 92, 142, 0.12);
+}
+
+.product-nutrition-subtitle {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--lavender);
+  margin: 0 0 0.75rem;
+}
+
+.product-nutrition-table {
+  margin: 0;
+}
+
+.product-nutrition-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid rgba(122, 92, 142, 0.08);
+}
+
+.product-nutrition-row:last-child {
+  border-bottom: none;
+}
+
+.product-nutrition-row dt {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--deep-purple);
+  font-weight: 500;
+}
+
+.product-nutrition-row dd {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--lavender);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+[dir="rtl"] .product-nutrition-summary::after {
+  transform: rotate(45deg);
+}
+
+[dir="rtl"] .product-nutrition-details[open] .product-nutrition-summary::after {
+  transform: rotate(-135deg);
+}
+
 .product-buy-title {
   font-family: var(--font-display);
   font-size: 1.5rem;
