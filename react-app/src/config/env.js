@@ -9,11 +9,14 @@ function readEnv(name, fallback = '') {
   return String(raw).trim();
 }
 
+const DEFAULT_WHATSAPP_URL = 'https://wa.me/972592431275';
+
 export const siteConfig = {
   siteUrl: readEnv('VITE_SITE_URL'),
-  whatsappUrl: readEnv('VITE_WHATSAPP_URL'),
+  whatsappUrl: readEnv('VITE_WHATSAPP_URL', DEFAULT_WHATSAPP_URL),
   instagramUrl: readEnv('VITE_INSTAGRAM_URL'),
   apiBase: readEnv('VITE_API_BASE'),
+  phoneDisplay: '+972 59-243-1275',
 };
 
 /** Build absolute URL for OG/canonical when VITE_SITE_URL is set. */

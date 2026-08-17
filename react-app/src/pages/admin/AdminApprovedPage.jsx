@@ -2,16 +2,20 @@ import { useMemo } from 'react';
 import { useAdminLanguage } from '@/context/LanguageContext';
 import { AdminOrderDeleteDialog } from './AdminOrderDeleteDialog';
 import { AdminOrderList } from './AdminOrderList';
+import { AdminOrderToolbar } from './AdminOrderToolbar';
+import { AdminErrorBanner } from './AdminEmptyState';
 import { isApprovedOrder } from './orderUtils';
 import { useAdminOrderActions } from './useAdminOrderActions';
 import { AdminOrdersCount } from './AdminOrdersCount';
 import { useAdminOrders } from './useAdminOrders';
+import { useOrderListView } from './useOrderListView';
 
 export function AdminApprovedPage() {
   const { t, lang } = useAdminLanguage();
-  const { data, setData, isLoading, error, setError } = useAdminOrders();
+  const { data, setData, isLoading, error, setError, loadOrders } = useAdminOrders();
   const actions = useAdminOrderActions({ setData, setError, t });
   const approvedOrders = useMemo(() => data.filter(isApprovedOrder), [data]);
+  const view = useOrderListView(approvedOrders);
 
   return (
     <>
@@ -23,15 +27,19 @@ export function AdminApprovedPage() {
         <AdminOrdersCount count={approvedOrders.length} label={t('admin.ordersCountTotal')} loading={isLoading} />
       </header>
 
-      {isLoading ? <div className="admin-loading">{t('admin.loading')}</div> : null}
-      {error ? <p className="admin-error">{error.message}</p> : null}
+      {error ? (
+        <AdminErrorBanner message={error.message} onRetry={() => loadOrders()} retryLabel={t('admin.retry')} />
+      ) : null}
 
-      {!isLoading ? (
+      {isLoading && !approvedOrders.length ? <div className="admin-loading">{t('admin.loading')}</div> : null}
+
+      {!isLoading || approvedOrders.length ? (
         <div className="admin-panel admin-panel--flush admin-panel--approved">
           <div className="admin-panel-body admin-panel-body--padded">
+            <AdminOrderToolbar view={view} t={t} />
             <AdminOrderList
-              orders={approvedOrders}
-              emptyText={t('admin.emptyApproved')}
+              orders={view.pageItems}
+              emptyText={view.query ? t('admin.noSearchResults') : t('admin.emptyApproved')}
               expandedId={actions.expandedId}
               setExpandedId={actions.setExpandedId}
               deletingId={actions.deletingId}

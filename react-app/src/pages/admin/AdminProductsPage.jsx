@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAdminLanguage } from '@/context/LanguageContext';
+import { Input } from '@/components/ui/input';
 import { groupShopProducts, SHOP_CATALOG_SECTIONS } from '@/lib/shopCatalog';
 import { fetchProducts, getMockProducts } from '@/services/api';
+import { AdminErrorBanner } from './AdminEmptyState';
 
 function toAdminProductRow(product) {
   return {
@@ -171,6 +173,7 @@ export function AdminProductsPage() {
   const [data, setData] = useState(() => getMockProducts().map(toAdminProductRow));
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [query, setQuery] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -196,7 +199,19 @@ export function AdminProductsPage() {
     };
   }, []);
 
-  const catalog = useMemo(() => groupShopProducts(data), [data]);
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return data;
+    return data.filter((product) =>
+      [product.name, product.name_ar, product.slug, product.category, product.badge]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+        .includes(q)
+    );
+  }, [data, query]);
+
+  const catalog = useMemo(() => groupShopProducts(filtered), [filtered]);
 
   const stats = useMemo(() => {
     const categories = new Set(data.map((p) => p.category).filter(Boolean));
@@ -204,6 +219,7 @@ export function AdminProductsPage() {
   }, [data]);
 
   const hasProducts = data.length > 0;
+  const hasFilteredProducts = filtered.length > 0;
 
   return (
     <>
@@ -224,14 +240,26 @@ export function AdminProductsPage() {
       </div>
 
       <section className="admin-panel">
-        <div className="admin-panel-head">
-          <h3>{t('admin.productsTitle')}</h3>
-          <p>{t('admin.productsSub')}</p>
+        <div className="admin-panel-head admin-panel-head--toolbar">
+          <div>
+            <h3>{t('admin.productsTitle')}</h3>
+            <p>{t('admin.productsSub')}</p>
+          </div>
+          <label className="admin-list-search">
+            <span className="sr-only">{t('admin.searchProducts')}</span>
+            <Input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t('admin.searchProducts')}
+              autoComplete="off"
+            />
+          </label>
         </div>
         <div className="admin-panel-body admin-panel-body--products">
           {isLoading ? <div className="admin-loading">{t('admin.loading')}</div> : null}
-          {error ? <p className="admin-error">{error.message}</p> : null}
-          {!isLoading && !error && hasProducts ? (
+          {error ? <AdminErrorBanner message={error.message} /> : null}
+          {!isLoading && !error && hasProducts && hasFilteredProducts ? (
             <div className="admin-product-sections">
               {SHOP_CATALOG_SECTIONS.map((section) => (
                 <AdminProductsSection
@@ -242,6 +270,9 @@ export function AdminProductsPage() {
                 />
               ))}
             </div>
+          ) : null}
+          {!isLoading && !error && hasProducts && !hasFilteredProducts ? (
+            <p className="admin-section-empty">{t('admin.noProductResults')}</p>
           ) : null}
           {!isLoading && !error && !hasProducts ? (
             <div className="admin-empty">

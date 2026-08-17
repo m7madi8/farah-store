@@ -33,14 +33,18 @@ export function computeProductSalesStats(approvedOrders) {
     .sort((a, b) => b.quantity - a.quantity || b.revenue - a.revenue);
 
   const totalRevenue = products.reduce((sum, p) => sum + p.revenue, 0);
+  const productsWithShare = products.map((p) => ({
+    ...p,
+    share: totalRevenue > 0 ? (p.revenue / totalRevenue) * 100 : 0,
+  }));
   const totalCost = totalRevenue * PRODUCT_COST_RATIO;
   const totalProfit = totalRevenue * PRODUCT_PROFIT_RATIO;
 
-  const topSeller = products[0] ?? null;
-  const leastSeller = products.length > 1 ? products[products.length - 1] : null;
+  const topSeller = productsWithShare[0] ?? null;
+  const leastSeller = productsWithShare.length > 1 ? productsWithShare[productsWithShare.length - 1] : null;
 
   return {
-    products,
+    products: productsWithShare,
     totalRevenue,
     totalCost,
     totalProfit,

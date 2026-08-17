@@ -23,7 +23,7 @@ export function AdminLayout() {
   const labelByKey = {
     pending: t('admin.menuPending'),
     ready: t('admin.menuReady'),
-    stats: t('admin.menuStats'),
+    stats: t('admin.menuOverview'),
     products: t('admin.menuProducts'),
   };
 

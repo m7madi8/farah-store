@@ -20,6 +20,7 @@ import { DESKTOP_HERO_MEDIA, getResponsiveHeroImages } from '../lib/productHeroI
 import { FloatingBackButton } from '../components/FloatingBackButton';
 import { SiteIcon } from '../components/SiteIcon';
 import { ProductNutrition } from '../components/ProductNutrition';
+import { ProductExtraGallery } from '../components/ProductExtraGallery';
 
 const DETAIL_IMAGE_FALLBACK = '/img/2.webp';
 const DETAIL_IMAGE_PLACEHOLDER =
@@ -114,18 +115,20 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
     ? `${name} (${lang === 'ar' ? selectedVariant.labelAr : selectedVariant.labelEn})`
     : name;
 
-  const galleryImages = useMemo(
-    () => (product?.images && product.images.length > 0 ? product.images : [product?.imageUrl || DETAIL_IMAGE_FALLBACK]),
-    [product]
-  );
-  const mainImageSrc = galleryImages[galleryIndex] || galleryImages[0] || DETAIL_IMAGE_FALLBACK;
-
   const responsiveHero = useMemo(() => getResponsiveHeroImages(product?.slug), [product?.slug]);
-  const heroMobileSrc = responsiveHero?.mobile ?? mainImageSrc;
-  const heroDesktopSrc = responsiveHero?.desktop ?? mainImageSrc;
-
   const isDateBalls = product?.slug === 'date-balls-chocolate';
   const isDumplingsHero = responsiveHero != null;
+
+  const galleryImages = useMemo(() => {
+    if (isDumplingsHero) return [];
+    return product?.images?.length > 0
+      ? product.images
+      : [product?.imageUrl || DETAIL_IMAGE_FALLBACK];
+  }, [product, isDumplingsHero]);
+  const mainImageSrc = galleryImages[galleryIndex] || galleryImages[0] || DETAIL_IMAGE_FALLBACK;
+
+  const heroMobileSrc = responsiveHero?.mobile ?? mainImageSrc;
+  const heroDesktopSrc = responsiveHero?.desktop ?? mainImageSrc;
 
   useEffect(() => {
     const mobile = heroMobileSrc;
@@ -231,6 +234,7 @@ export function ProductDetailPage({ cartOpen, onCartOpen, setCartOpen }) {
           </div>
           <div className="product-hero-overlay product-hero-anim" />
         </div>
+        {isDumplingsHero ? <ProductExtraGallery slug={product.slug} productName={name} /> : null}
         <div className="product-content product-content-anim">
           <div className="product-content-inner product-content-anim">
             <header className="product-header anim-on-scroll">

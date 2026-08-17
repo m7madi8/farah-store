@@ -53,6 +53,15 @@ export function AdminNavIcon({ type }) {
       </svg>
     );
   }
+  if (type === 'store') {
+    return (
+      <svg {...common}>
+        <path d="M3 9l1-5h16l1 5" />
+        <path d="M3 9h18v10a1 1 0 01-1 1H4a1 1 0 01-1-1V9z" />
+        <path d="M9 20v-6h6v6" />
+      </svg>
+    );
+  }
   return (
     <svg {...common}>
       <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />

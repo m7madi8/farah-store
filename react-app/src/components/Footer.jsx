@@ -17,17 +17,29 @@ export function Footer() {
           <span className="footer-brand">{t('nav.brand')}</span>
         </div>
         <div className="footer-col footer-col-connect">
-          <span className="footer-label">{t('footer.followUs')}</span>
-          <a
-            href={siteConfig.instagramUrl || 'https://instagram.com'}
-            className="footer-instagram"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Instagram"
-          >
-            <SiteIcon name="instagram" />
-            <span>{t('footer.instagram')}</span>
-          </a>
+          <span className="footer-label">{t('footer.contact')}</span>
+          <div className="footer-connect-links">
+            <a
+              href={siteConfig.whatsappUrl}
+              className="footer-instagram"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${t('footer.whatsapp')} ${siteConfig.phoneDisplay}`}
+            >
+              <SiteIcon name="whatsapp" />
+              <span dir="ltr">{siteConfig.phoneDisplay}</span>
+            </a>
+            <a
+              href={siteConfig.instagramUrl || 'https://instagram.com'}
+              className="footer-instagram"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram"
+            >
+              <SiteIcon name="instagram" />
+              <span>{t('footer.instagram')}</span>
+            </a>
+          </div>
         </div>
         <div className="footer-col footer-col-payment">
           <span className="footer-label">{t('footer.paymentMethods')}</span>

@@ -14,7 +14,7 @@
       "badge": "Signature",
       "details": ["detail1", "detail2", "detail3", "detail4", "detail5", "detailTeriyaki", "detailSweetChili", "detail6"],
       "variants": null,
-      "images": []
+      "images": ["/img/d1.png", "/img/d2.png", "/img/d3.jpeg", "/img/d4.png"]
     },
     "dumplings-meat": {
       "slug": "dumplings-meat",
@@ -30,7 +30,7 @@
       "badge": "Signature",
       "details": ["detail1", "detail2Meat", "detail3", "detail4", "detail5", "detailTeriyaki", "detailSweetChili", "detail6"],
       "variants": null,
-      "images": []
+      "images": ["/img/d1.png", "/img/d2.png", "/img/d3.jpeg", "/img/d4.png"]
     },
     "teriyaki-sauce": {
       "slug": "teriyaki-sauce",

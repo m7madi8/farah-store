@@ -1,6 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useAdminLanguage } from '@/context/LanguageContext';
-import { computeProductSalesStats, formatMoney } from './salesStats';
+import { formatMoney } from './salesStats';
+import { formatPercent } from './dashboardAnalytics';
+import { AdminEmptyState } from './AdminEmptyState';
 
 function HighlightProduct({ label, product, qtyLabel, t }) {
   if (!product) {
@@ -22,90 +24,98 @@ function HighlightProduct({ label, product, qtyLabel, t }) {
   );
 }
 
-export function AdminSalesStats({ approvedOrders, showHeader = true }) {
+export function AdminSalesStats({ products = [], topSeller, leastSeller, showHeader = true }) {
   const { t } = useAdminLanguage();
+  const [sortKey, setSortKey] = useState('quantity');
 
-  const sales = useMemo(() => computeProductSalesStats(approvedOrders), [approvedOrders]);
-
-  if (!sales.products.length) {
-    return (
-      <section className="admin-sales-section">
-        {showHeader ? (
-          <header className="admin-section-head">
-            <h3>{t('admin.menuStats')}</h3>
-            <p>{t('admin.statsSub')}</p>
-          </header>
-        ) : null}
-        <div className="admin-panel admin-panel-body--padded">
-          <p className="admin-section-empty">{t('admin.statsEmpty')}</p>
-        </div>
-      </section>
-    );
-  }
+  const rows = useMemo(() => {
+    const list = [...products];
+    list.sort((a, b) => {
+      if (sortKey === 'revenue') return b.revenue - a.revenue || b.quantity - a.quantity;
+      if (sortKey === 'share') return b.share - a.share || b.revenue - a.revenue;
+      return b.quantity - a.quantity || b.revenue - a.revenue;
+    });
+    return list;
+  }, [products, sortKey]);
 
   return (
     <section className="admin-sales-section">
       {showHeader ? (
         <header className="admin-section-head">
-          <h3>{t('admin.menuStats')}</h3>
-          <p>{t('admin.statsSub')}</p>
+          <h3>{t('admin.statByProduct')}</h3>
+          <p>{t('admin.statByProductHint')}</p>
         </header>
       ) : null}
 
-      <div className="admin-sales-summary">
-        <div className="admin-stat-card admin-stat-card--profit">
-          <div className="admin-stat-label">{t('admin.statTotalProfit')}</div>
-          <div className="admin-stat-value">{formatMoney(sales.totalProfit)}</div>
-          <p className="admin-stat-hint">{t('admin.statProfitHint')}</p>
+      {!products.length ? (
+        <div className="admin-panel">
+          <AdminEmptyState title={t('admin.statsEmpty')} body={t('admin.emptyPeriodBody')} />
         </div>
-      </div>
+      ) : (
+        <>
+          <div className="admin-sales-highlights">
+            <HighlightProduct
+              label={t('admin.statTopSeller')}
+              product={topSeller}
+              qtyLabel={t('admin.statUnitsSold')}
+              t={t}
+            />
+            <HighlightProduct
+              label={t('admin.statLeastSeller')}
+              product={leastSeller}
+              qtyLabel={t('admin.statUnitsSold')}
+              t={t}
+            />
+          </div>
 
-      <div className="admin-sales-highlights">
-        <HighlightProduct
-          label={t('admin.statTopSeller')}
-          product={sales.topSeller}
-          qtyLabel={t('admin.statUnitsSold')}
-          t={t}
-        />
-        <HighlightProduct
-          label={t('admin.statLeastSeller')}
-          product={sales.leastSeller}
-          qtyLabel={t('admin.statUnitsSold')}
-          t={t}
-        />
-      </div>
-
-      <div className="admin-panel admin-panel--flush">
-        <div className="admin-panel-head">
-          <h3>{t('admin.statByProduct')}</h3>
-        </div>
-        <ul className="admin-sales-product-list">
-          {sales.products.map((p) => (
-            <li key={p.key} className="admin-sales-product-row">
-              <div className="admin-sales-product-main">
-                <span className="admin-sales-product-name">{p.name}</span>
-                <span className="admin-sales-product-qty">
-                  {t('admin.statUnitsSold')}: <strong>{p.quantity}</strong>
-                </span>
-              </div>
-              <div className="admin-sales-product-figures">
-                <span>
-                  <small>{t('admin.statSales')}</small>
-                  {formatMoney(p.revenue)}
-                </span>
-                <span>
-                  <small>{t('admin.statCost')}</small>
-                  {formatMoney(p.cost)}
-                </span>
-                <span className="admin-sales-product-profit">
-                  <small>{t('admin.statProfit')}</small>
-                  {formatMoney(p.profit)}
-                </span>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
+          <div className="admin-panel admin-panel--flush">
+            <div className="admin-panel-head admin-panel-head--toolbar">
+              <h3>{t('admin.statByProduct')}</h3>
+              <label className="admin-sort-field">
+                <span>{t('admin.sortBy')}</span>
+                <select value={sortKey} onChange={(e) => setSortKey(e.target.value)}>
+                  <option value="quantity">{t('admin.statUnitsSold')}</option>
+                  <option value="revenue">{t('admin.statSales')}</option>
+                  <option value="share">{t('admin.shareOfSales')}</option>
+                </select>
+              </label>
+            </div>
+            <ul className="admin-sales-product-list">
+              {rows.map((p) => (
+                <li key={p.key} className="admin-sales-product-row">
+                  <div className="admin-sales-product-main">
+                    <span className="admin-sales-product-name">{p.name}</span>
+                    <span className="admin-sales-product-qty">
+                      {t('admin.statUnitsSold')}: <strong>{p.quantity}</strong>
+                    </span>
+                    <span className="admin-sales-share-track" aria-hidden>
+                      <span className="admin-sales-share-fill" style={{ width: `${Math.min(100, p.share || 0)}%` }} />
+                    </span>
+                  </div>
+                  <div className="admin-sales-product-figures">
+                    <span>
+                      <small>{t('admin.shareOfSales')}</small>
+                      {formatPercent(p.share)}
+                    </span>
+                    <span>
+                      <small>{t('admin.statSales')}</small>
+                      {formatMoney(p.revenue)}
+                    </span>
+                    <span>
+                      <small>{t('admin.statCost')}</small>
+                      {formatMoney(p.cost)}
+                    </span>
+                    <span className="admin-sales-product-profit">
+                      <small>{t('admin.statProfit')}</small>
+                      {formatMoney(p.profit)}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </>
+      )}
     </section>
   );
 }

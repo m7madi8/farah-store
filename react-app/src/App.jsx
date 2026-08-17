@@ -86,7 +86,7 @@ function AppRoutes() {
               </AdminLanguageScope>
             }
           >
-            <Route index element={<Navigate to="pending" replace />} />
+            <Route index element={<Navigate to="stats" replace />} />
             <Route path="orders" element={<Navigate to="/admin/pending" replace />} />
             <Route path="pending" element={<AdminPendingPage />} />
             <Route path="approved" element={<AdminApprovedPage />} />
